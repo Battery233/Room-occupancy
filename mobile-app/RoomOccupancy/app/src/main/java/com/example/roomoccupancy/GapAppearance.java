@@ -58,7 +58,7 @@ public class GapAppearance {
     }
 
     public static int get(String name) {
-        for(int i = 0; i < sGapAppearences.size(); i++){
+        for (int i = 0; i < sGapAppearences.size(); i++) {
             int key = sGapAppearences.keyAt(i);
             if (sGapAppearences.valueAt(i).equals(name)) {
                 return key;

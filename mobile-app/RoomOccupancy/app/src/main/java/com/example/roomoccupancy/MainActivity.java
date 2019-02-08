@@ -28,6 +28,9 @@ import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "BluetoothConnActivity";
+
+    private static final String MAC_ADDRESS_1 = "C6:3A:65:0A:DC:E3 ";
+
     AlertDialog mSelectionDialog;
     DevicesAdapter mDevicesAdapter;
     BluetoothAdapter mBluetoothAdapter;

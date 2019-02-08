@@ -10,8 +10,7 @@ public class GapData {
         // More info in the bluetooth spec v4.0, p1690
         mRecords = new ArrayList<EirRecord>();
         int buffPos = 0;
-        while (buffPos < scanRecord.length)
-        {
+        while (buffPos < scanRecord.length) {
             int len = scanRecord[buffPos++];
             if (len == 0)
                 break;
