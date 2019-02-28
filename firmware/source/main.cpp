@@ -1,58 +1,80 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2006-2013 ARM Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 #include <events/mbed_events.h>
- 
 #include <mbed.h>
 #include "ble/BLE.h"
 #include "ble/Gap.h"
-#include "ButtonService.h"
+#include "PirService.h"
+#include "DistanceService.h"
+#include "VL53L0X.h"
+
+#define I2C_SCL   p7
+#define I2C_SDA   p30
+#define PIR_PIN p16
+#define DUMMY_PIN p1
  
 DigitalOut  led1(LED1, 1);
-InterruptIn button(BLE_PIR_PIN_NAME, PullNone); //sensor on 0, sensor off 1
+DigitalOut  led2(LED2, 1);
+InterruptIn pir1(PIR_PIN, PullNone); //PIR sensor on -> 0, sensor off -> 1
  
-static EventQueue eventQueue(/* event count */ 10 * EVENTS_EVENT_SIZE);
- 
-const static char     DEVICE_NAME[] = "Button";
-static const uint16_t uuid16_list[] = {ButtonService::BUTTON_SERVICE_UUID};
- 
-ButtonService *buttonServicePtr;
- 
-void buttonPressedCallback(void)
+const static char     DEVICE_NAME[] = "---OMG---";
+static const uint16_t uuid16_list[] = {0xFFFF};
+static EventQueue eventQueue(/* event count */ 20 * EVENTS_EVENT_SIZE);
+Serial pc(USBTX, USBRX);
+PirService *pirServicePtr;
+DistanceService *distanceServicePtr;
+
+// callback for distance
+void distanceTrueCallback(void)
 {
-    eventQueue.call(Callback<void(bool)>(buttonServicePtr, &ButtonService::updateButtonState), true);
+    eventQueue.call(Callback<void(bool)>(distanceServicePtr, &DistanceService::updateDistanceState), true);
 }
  
-void buttonReleasedCallback(void)
+void distanceFalseCallback(void)
 {
-    eventQueue.call(Callback<void(bool)>(buttonServicePtr, &ButtonService::updateButtonState), false);
+    eventQueue.call(Callback<void(bool)>(distanceServicePtr, &DistanceService::updateDistanceState), false);
 }
- 
+
+void queueCallback(void)
+{
+    led1 = !led1; /* Do blinky on LED1 to indicate system aliveness. */
+    // Distance sensor here
+    static DevI2C devI2c(I2C_SDA, I2C_SCL);
+    static DigitalOut dummyOut(DUMMY_PIN);
+    static VL53L0X distance_raw(&devI2c, &dummyOut, NC);
+    distance_raw.init_sensor(0x29);
+    uint32_t distance = 0;
+    distance_raw.get_distance(&distance);
+//    if(VL53L0X_ERROR_NONE==distance_raw.get_distance(&distance)){
+    if(distance>10&&distance<100){
+            led2 = 0;
+            distanceTrueCallback();   
+        }
+        else {
+            led2 = 1;
+            distanceFalseCallback();
+        }
+    }
+//    }
+
+// system callback 
 void disconnectionCallback(const Gap::DisconnectionCallbackParams_t *params)
 {
     BLE::Instance().gap().startAdvertising(); // restart advertising
 }
  
-void blinkCallback(void)
-{
-    led1 = !led1; /* Do blinky on LED1 to indicate system aliveness. */
-}
- 
 void onBleInitError(BLE &ble, ble_error_t error)
 {
     /* Initialization error handling should go here */
+}
+
+// callback functions for pir
+void buttonPressedCallback(void)
+{
+    eventQueue.call(Callback<void(bool)>(pirServicePtr, &PirService::updatePirState), true);
+}
+ 
+void buttonReleasedCallback(void)
+{
+    eventQueue.call(Callback<void(bool)>(pirServicePtr, &PirService::updatePirState), false);
 }
  
 void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
@@ -73,11 +95,12 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
  
     ble.gap().onDisconnection(disconnectionCallback);
  
-    button.fall(buttonPressedCallback);
-    button.rise(buttonReleasedCallback);
+    pir1.fall(buttonPressedCallback);
+    pir1.rise(buttonReleasedCallback);
  
     /* Setup primary service. */
-    buttonServicePtr = new ButtonService(ble, false /* initial value for button pressed */);
+    pirServicePtr = new PirService(ble, false /* initial value for button pressed */);
+    distanceServicePtr = new DistanceService(ble,false);
  
     /* setup advertising */
     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::BREDR_NOT_SUPPORTED | GapAdvertisingData::LE_GENERAL_DISCOVERABLE);
@@ -95,7 +118,9 @@ void scheduleBleEventsProcessing(BLE::OnEventsToProcessCallbackContext* context)
  
 int main()
 {
-    eventQueue.call_every(500, blinkCallback);
+    pc.printf("Hello World!\n");
+
+    eventQueue.call_every(100, queueCallback);
  
     BLE &ble = BLE::Instance();
     ble.onEventsToProcess(scheduleBleEventsProcessing);

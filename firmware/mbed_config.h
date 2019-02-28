@@ -22,7 +22,6 @@
 #define __MBED_CONFIG_DATA__
 
 // Configuration parameters
-#define BLE_PIR_PIN_NAME                                                      p16                                                                                              // set by application[NRF51_DK]
 #define MBED_CONF_ATMEL_RF_ASSUME_SPACED_SPI                                  0                                                                                                // set by library:atmel-rf
 #define MBED_CONF_ATMEL_RF_FULL_SPI_SPEED                                     7500000                                                                                          // set by library:atmel-rf
 #define MBED_CONF_ATMEL_RF_FULL_SPI_SPEED_BYTE_SPACING                        250                                                                                              // set by library:atmel-rf
