@@ -1,4 +1,4 @@
-# example-projects
+# projects
 
 Here are some programs for several specific functions. To run the program, move the .cpp file to this folder and compile.
 
