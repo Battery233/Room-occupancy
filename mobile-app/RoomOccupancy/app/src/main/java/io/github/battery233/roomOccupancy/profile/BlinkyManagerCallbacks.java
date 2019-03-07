@@ -20,19 +20,14 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.profile.callback;
+package io.github.battery233.roomOccupancy.profile;
 
-import android.bluetooth.BluetoothDevice;
+import io.github.battery233.roomOccupancy.profile.callback.BlinkyLedCallback;
 
-import androidx.annotation.NonNull;
+import no.nordicsemi.android.ble.BleManagerCallbacks;
+import io.github.battery233.roomOccupancy.profile.callback.BlinkyButtonCallback;
 
-public interface BlinkyLedCallback {
-
-    /**
-     * Called when the data has been sent to the connected device.
-     *
-     * @param device the target device.
-     * @param on true when LED was enabled, false when disabled.
-     */
-    void onLedStateChanged(@NonNull final BluetoothDevice device, final boolean on);
+public interface BlinkyManagerCallbacks extends BleManagerCallbacks,
+		BlinkyButtonCallback, BlinkyLedCallback {
+	// No more methods
 }

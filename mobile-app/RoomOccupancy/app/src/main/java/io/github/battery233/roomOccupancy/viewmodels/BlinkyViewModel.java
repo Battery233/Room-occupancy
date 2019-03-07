@@ -20,19 +20,21 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.viewmodels;
+package io.github.battery233.roomOccupancy.viewmodels;
 
 import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import android.bluetooth.BluetoothDevice;
+
+import io.github.battery233.roomOccupancy.adapter.DiscoveredBluetoothDevice;
+import io.github.battery233.roomOccupancy.profile.BlinkyManager;
+import io.github.battery233.roomOccupancy.profile.BlinkyManagerCallbacks;
+
 import androidx.annotation.NonNull;
 
-import no.nordicsemi.android.blinky.R;
-import no.nordicsemi.android.blinky.adapter.DiscoveredBluetoothDevice;
-import no.nordicsemi.android.blinky.profile.BlinkyManager;
-import no.nordicsemi.android.blinky.profile.BlinkyManagerCallbacks;
+import io.github.battery233.roomOccupancy.R;
 import no.nordicsemi.android.log.LogSession;
 import no.nordicsemi.android.log.Logger;
 

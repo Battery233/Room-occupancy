@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.profile;
+package io.github.battery233.roomOccupancy.profile;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -36,9 +36,9 @@ import java.util.UUID;
 
 import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.data.Data;
-import no.nordicsemi.android.blinky.profile.callback.BlinkyButtonDataCallback;
-import no.nordicsemi.android.blinky.profile.callback.BlinkyLedDataCallback;
-import no.nordicsemi.android.blinky.profile.data.BlinkyLED;
+import io.github.battery233.roomOccupancy.profile.callback.BlinkyButtonDataCallback;
+import io.github.battery233.roomOccupancy.profile.callback.BlinkyLedDataCallback;
+import io.github.battery233.roomOccupancy.profile.data.BlinkyLED;
 import no.nordicsemi.android.log.LogContract;
 import no.nordicsemi.android.log.LogSession;
 import no.nordicsemi.android.log.Logger;

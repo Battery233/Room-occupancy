@@ -20,40 +20,33 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.adapter;
+package io.github.battery233.roomOccupancy.profile.callback;
 
-import androidx.recyclerview.widget.DiffUtil;
+import android.bluetooth.BluetoothDevice;
+import androidx.annotation.NonNull;
 
-import java.util.List;
+import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
+import no.nordicsemi.android.ble.data.Data;
 
-public class DeviceDiffCallback extends DiffUtil.Callback {
-	private final List<DiscoveredBluetoothDevice> oldList;
-	private final List<DiscoveredBluetoothDevice> newList;
+@SuppressWarnings("ConstantConditions")
+public abstract class BlinkyButtonDataCallback implements ProfileDataCallback, BlinkyButtonCallback {
+    private static final int STATE_RELEASED = 0x00;
+    private static final int STATE_PRESSED = 0x01;
 
-	DeviceDiffCallback(final List<DiscoveredBluetoothDevice> oldList,
-					   final List<DiscoveredBluetoothDevice> newList) {
-		this.oldList = oldList;
-		this.newList = newList;
-	}
+    @Override
+    public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+        if (data.size() != 1) {
+            onInvalidDataReceived(device, data);
+            return;
+        }
 
-	@Override
-	public int getOldListSize() {
-		return oldList != null ? oldList.size() : 0;
-	}
-
-	@Override
-	public int getNewListSize() {
-		return newList != null ? newList.size() : 0;
-	}
-
-	@Override
-	public boolean areItemsTheSame(final int oldItemPosition, final int newItemPosition) {
-		return oldList.get(oldItemPosition) == newList.get(newItemPosition);
-	}
-
-	@Override
-	public boolean areContentsTheSame(final int oldItemPosition, final int newItemPosition) {
-		final DiscoveredBluetoothDevice device = oldList.get(oldItemPosition);
-		return device.hasRssiLevelChanged();
-	}
+        final int state = data.getIntValue(Data.FORMAT_UINT8, 0);
+        if (state == STATE_PRESSED) {
+            onButtonStateChanged(device, true);
+        } else if (state == STATE_RELEASED) {
+            onButtonStateChanged(device, false);
+        } else {
+            onInvalidDataReceived(device, data);
+        }
+    }
 }

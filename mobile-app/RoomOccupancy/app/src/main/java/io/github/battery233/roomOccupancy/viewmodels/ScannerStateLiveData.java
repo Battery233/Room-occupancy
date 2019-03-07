@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.viewmodels;
+package io.github.battery233.roomOccupancy.viewmodels;
 
 import androidx.lifecycle.LiveData;
 

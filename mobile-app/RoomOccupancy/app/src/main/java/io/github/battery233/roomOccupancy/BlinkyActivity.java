@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky;
+package io.github.battery233.roomOccupancy;
 
 import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -30,16 +30,14 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import no.nordicsemi.android.blinky.adapter.DiscoveredBluetoothDevice;
-import no.nordicsemi.android.blinky.viewmodels.BlinkyViewModel;
+import io.github.battery233.roomOccupancy.adapter.DiscoveredBluetoothDevice;
+import io.github.battery233.roomOccupancy.viewmodels.BlinkyViewModel;
 
 @SuppressWarnings("ConstantConditions")
 public class BlinkyActivity extends AppCompatActivity {

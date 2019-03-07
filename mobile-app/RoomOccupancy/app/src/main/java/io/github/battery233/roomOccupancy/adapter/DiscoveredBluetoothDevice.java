@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.adapter;
+package io.github.battery233.roomOccupancy.adapter;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
@@ -71,7 +71,7 @@ public class DiscoveredBluetoothDevice implements Parcelable {
 
 	/**
 	 * This method returns true if the RSSI range has changed. The RSSI range depends on drawable
-	 * levels from {@link no.nordicsemi.android.blinky.R.drawable#ic_signal_bar}.
+	 * levels from {@link io.github.battery233.roomOccupancy.R.drawable#ic_signal_bar}.
 	 *
 	 * @return True, if the RSSI range has changed.
 	 */

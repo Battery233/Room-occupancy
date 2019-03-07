@@ -20,19 +20,19 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.profile.callback;
+package io.github.battery233.roomOccupancy.profile.data;
 
-import android.bluetooth.BluetoothDevice;
+import no.nordicsemi.android.ble.data.Data;
 
-import androidx.annotation.NonNull;
+public final class BlinkyLED {
+    private static final byte STATE_OFF = 0x00;
+    private static final byte STATE_ON = 0x01;
 
-public interface BlinkyButtonCallback {
+    public static Data turnOn() {
+        return Data.opCode(STATE_ON);
+    }
 
-    /**
-     * Called when a button was pressed or released on device.
-     *
-     * @param device the target device.
-     * @param pressed true if the button was pressed, false if released.
-     */
-    void onButtonStateChanged(@NonNull final BluetoothDevice device, final boolean pressed);
+    public static Data turnOff() {
+        return Data.opCode(STATE_OFF);
+    }
 }

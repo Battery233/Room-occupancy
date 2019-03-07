@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky;
+package io.github.battery233.roomOccupancy;
 
 import android.Manifest;
 import androidx.lifecycle.ViewModelProviders;
@@ -47,11 +47,11 @@ import android.widget.Button;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import no.nordicsemi.android.blinky.adapter.DevicesAdapter;
-import no.nordicsemi.android.blinky.adapter.DiscoveredBluetoothDevice;
-import no.nordicsemi.android.blinky.utils.Utils;
-import no.nordicsemi.android.blinky.viewmodels.ScannerStateLiveData;
-import no.nordicsemi.android.blinky.viewmodels.ScannerViewModel;
+import io.github.battery233.roomOccupancy.adapter.DevicesAdapter;
+import io.github.battery233.roomOccupancy.adapter.DiscoveredBluetoothDevice;
+import io.github.battery233.roomOccupancy.utils.Utils;
+import io.github.battery233.roomOccupancy.viewmodels.ScannerStateLiveData;
+import io.github.battery233.roomOccupancy.viewmodels.ScannerViewModel;
 
 public class ScannerActivity extends AppCompatActivity implements DevicesAdapter.OnItemClickListener {
 	private static final int REQUEST_ACCESS_COARSE_LOCATION = 1022; // random number

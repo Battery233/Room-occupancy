@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.utils;
+package io.github.battery233.roomOccupancy.utils;
 
 import android.Manifest;
 import android.app.Activity;

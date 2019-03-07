@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package no.nordicsemi.android.blinky.viewmodels;
+package io.github.battery233.roomOccupancy.viewmodels;
 
 import android.util.Log;
 
