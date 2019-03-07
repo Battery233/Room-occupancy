@@ -28,6 +28,6 @@ import no.nordicsemi.android.ble.BleManagerCallbacks;
 import io.github.battery233.roomOccupancy.profile.callback.BlinkyButtonCallback;
 
 public interface BlinkyManagerCallbacks extends BleManagerCallbacks,
-		BlinkyButtonCallback, BlinkyLedCallback {
-	// No more methods
+        BlinkyButtonCallback, BlinkyLedCallback {
+    // No more methods
 }

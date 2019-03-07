@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018, Nordic Semiconductor
   ~ All rights reserved.
   ~
@@ -21,53 +20,52 @@
   ~ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<manifest package="io.github.battery233.roomOccupancy"
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.github.battery233.roomOccupancy">
 
-	<uses-permission android:name="android.permission.BLUETOOTH"/>
-	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-	<uses-permission android:name="no.nordicsemi.android.LOG"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="no.nordicsemi.android.LOG" />
 
-	<uses-feature
-		android:name="android.hardware.bluetooth_le"
-		android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 
-	<application
-		android:allowBackup="true"
-		android:fullBackupContent="true"
-		android:icon="@mipmap/ic_launcher"
-		android:roundIcon="@mipmap/ic_launcher_round"
-		android:label="@string/app_name"
-		android:theme="@style/AppTheme"
-		tools:ignore="GoogleAppIndexingWarning">
-		<activity
-			android:name=".SplashScreenActivity"
-			android:theme="@style/AppTheme.SplashScreen"
-			android:noHistory="true"
-			android:launchMode="singleTop">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"/>
-				<category android:name="android.intent.category.LAUNCHER"/>
-			</intent-filter>
-		</activity>
-		<activity
-			android:name=".ScannerActivity"
-			android:icon="@drawable/ic_blinky_feature"
-			android:label="@string/feature_name"
-			android:launchMode="singleTop">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN"/>
-				<category android:name="no.nordicsemi.android.nrftoolbox.LAUNCHER"/>
-			</intent-filter>
-		</activity>
-		<activity
-			android:name=".BlinkyActivity"
-			android:launchMode="singleTop"
-			android:parentActivityName=".ScannerActivity">
-		</activity>
+    <application
+        android:allowBackup="true"
+        android:fullBackupContent="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity
+            android:name=".SplashScreenActivity"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.SplashScreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ScannerActivity"
+            android:icon="@drawable/ic_blinky_feature"
+            android:label="@string/feature_name"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="no.nordicsemi.android.nrftoolbox.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".BlinkyActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ScannerActivity"></activity>
 
-	</application>
+    </application>
 
 </manifest>

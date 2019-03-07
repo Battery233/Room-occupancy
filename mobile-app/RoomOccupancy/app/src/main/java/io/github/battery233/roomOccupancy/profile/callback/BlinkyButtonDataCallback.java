@@ -23,6 +23,7 @@
 package io.github.battery233.roomOccupancy.profile.callback;
 
 import android.bluetooth.BluetoothDevice;
+
 import androidx.annotation.NonNull;
 
 import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
