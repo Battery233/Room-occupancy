@@ -27,6 +27,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class SplashScreenActivity extends Activity {
 	private static final int DURATION = 1000;
 
@@ -34,6 +38,13 @@ public class SplashScreenActivity extends Activity {
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash_screen);
+
+		// Write a message to the database
+		FirebaseApp.initializeApp(this);
+		FirebaseDatabase database = FirebaseDatabase.getInstance();
+		DatabaseReference myRef = database.getReference("message");
+
+		myRef.setValue("Hello, World!");
 
 		new Handler().postDelayed(() -> {
 			final Intent intent = new Intent(this, ScannerActivity.class);

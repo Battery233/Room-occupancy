@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "803591973096",
+    "firebase_url": "https://roomoccupancy-39040.firebaseio.com",
+    "project_id": "roomoccupancy-39040",
+    "storage_bucket": "roomoccupancy-39040.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803591973096:android:86407835e3346b29",
+        "android_client_info": {
+          "package_name": "io.github.battery233.roomOccupancy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "803591973096-ko5lbm9idg1gvjhq2ee1tp27n7pp89a0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.github.battery233.roomOccupancy",
+            "certificate_hash": "04743fdc146ac559740168dc1539c6d0fb1985cb"
+          }
+        },
+        {
+          "client_id": "803591973096-b7r9a1lvq9osdr3f9pd620184rtbrnp9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVpPEXkh1jWELrnCYzhKLOhS-yqr4j0Gw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "803591973096-b7r9a1lvq9osdr3f9pd620184rtbrnp9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
