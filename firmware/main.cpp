@@ -8,7 +8,6 @@
 
 #define USE_I2C_2V8
 
-
 // IMPORTAINT used with library: https://codeload.github.com/ARMmbed/VL53L0X-mbedOS/zip/master
 // Change the first line after includes in file vl53l0x_i2c_platform.cpp to:
 // I2C i2c(p30, p7);
@@ -16,26 +15,43 @@
 Serial pc(USBTX, USBRX);
 DigitalOut led(LED1);
 
-#define PIR_PIN p14
-DigitalIn pir(p14, PullNone);
+#define PIR_PIN_1 p14
+DigitalIn pir_1(p14, PullNone);
+#define PIR_PIN_2 p15
+DigitalIn pir_2(p15, PullNone);
 
-uint16_t customServiceUUID  = 0xABC0;
-uint16_t readCharUUID      = 0xABC1;
+uint16_t disServiceUUID  = 0xAB00;
+uint16_t distanceCharUUID      = 0xAB01;
+uint16_t pirServiceUUID_1      = 0xAB10;
+uint16_t pirCharUUID_1      = 0xAB11;
+uint16_t pirServiceUUID_2      = 0xAB20;
+uint16_t pirCharUUID_2      = 0xAB21;
 
 const static char     DEVICE_NAME[]        = "OMG"; // change this
 static const uint16_t uuid16_list[]        = {0xFFFF}; //Custom UUID, FFFF is reserved for development
 
 // payload
-static uint8_t readValue[3] = {0};
+static uint8_t readValue = 0;
 
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> readChar(readCharUUID, readValue,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar(distanceCharUUID, &readValue,
+        GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ |
+        GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
+
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_1(pirCharUUID_1, &readValue,
+        GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ |
+        GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
+
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_2(pirCharUUID_2, &readValue,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ |
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
 
 /* Set up custom service */
-GattCharacteristic *characteristics[] = {&readChar};
-GattService customService(customServiceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic *));
-
+GattCharacteristic *characteristics[] = {&distanceChar};
+GattService distanceService(disServiceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic *));
+GattCharacteristic *characteristics_2[] = {&pirChar_1};
+GattService pirService_1(pirServiceUUID_1, characteristics_2, sizeof(characteristics_2) / sizeof(GattCharacteristic *));
+GattCharacteristic *characteristics_3[] = {&pirChar_2};
+GattService pirService_2(pirServiceUUID_2, characteristics_3, sizeof(characteristics_3) / sizeof(GattCharacteristic *));
 /*
  *  Restart advertising when phone app disconnects
 */
@@ -66,7 +82,9 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
     ble.gap().setAdvertisingInterval(100); // 100ms.
 
     /* Add our custom service */
-    ble.addService(customService);
+    ble.addService(distanceService);
+    ble.addService(pirService_1);
+    ble.addService(pirService_2);
 
     /* Start advertising */
     ble.gap().startAdvertising();
@@ -76,7 +94,7 @@ int main()
 {
 
     /* initialize stuff */
-    printf("\n\r********* Start here*********\n\r");
+    printf("\n\r********* Start device*********\n\r");
 
     BLE& ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
     ble.init(bleInitComplete);
@@ -129,22 +147,36 @@ int main()
         VL53L0X_ClearInterruptMask(pMyDevice, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
         VL53L0X_PollingDelay(pMyDevice);
 
+        uint8_t distance_boolean = measure>10 && measure<500? 1 : 0;
+
+        //get string and send via bluetooth
+        memcpy(&readValue, &distance_boolean, sizeof(distance_boolean));
+        ble.updateCharacteristicValue(distanceChar.getValueHandle(), &readValue, sizeof(readValue));
+
         //set pir value
-        if(pir==0x00) {
-            printf("PIR off!\r\n");
+        if(pir_1==0x00) {
+            printf("PIR 1 off!\t");
             pir_on = 0;
         } else {
-            printf("PIR on!\r\n");
+            printf("PIR 1 on!\t");
             pir_on = 1;
         }
-        
-        //get string and send via bluetooth
-        memcpy(readValue, &measure, sizeof(measure));
-        memcpy(&(readValue[2]), &pir_on, sizeof(pir_on));
-        ble.updateCharacteristicValue(readChar.getValueHandle(), readValue, sizeof(readValue));
+        memcpy(&readValue, &pir_on, sizeof(pir_on));
+        ble.updateCharacteristicValue(pirChar_1.getValueHandle(), &readValue, sizeof(readValue));
+
+        //set pir value
+        if(pir_2==0x00) {
+            printf("PIR 2 off!\r\n");
+            pir_on = 0;
+        } else {
+            printf("PIR 2 on!\r\n");
+            pir_on = 1;
+        }
+        memcpy(&readValue, &pir_on, sizeof(pir_on));
+        ble.updateCharacteristicValue(pirChar_2.getValueHandle(), &readValue, sizeof(readValue));
 
         //wait
-        wait(0.1);
+        wait(0.01);
     }
     //VL53L0X_StopMeasurement(pMyDevice);
 //    WaitStopCompleted(pMyDevice);
