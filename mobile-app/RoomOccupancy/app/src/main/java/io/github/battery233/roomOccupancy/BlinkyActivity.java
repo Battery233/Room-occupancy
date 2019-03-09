@@ -2,6 +2,7 @@ package io.github.battery233.roomOccupancy;
 
 import androidx.lifecycle.ViewModelProviders;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -24,9 +25,16 @@ public class BlinkyActivity extends AppCompatActivity {
 
     private BlinkyViewModel mViewModel;
 
-    @BindView(R.id.button_state)
-    TextView mButtonState;
+    @BindView(R.id.tof_state)
+    TextView tofState;
+    @BindView(R.id.pir_state_1)
+    TextView pirState1;
+    @BindView(R.id.pir_state_2)
+    TextView pirState2;
+    @BindView(R.id.getHighestRssi)
+    TextView getHighestRssi;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,9 +82,23 @@ public class BlinkyActivity extends AppCompatActivity {
             }
         });
 
+        getHighestRssi.setText("Bluetooth maximum signal strengeth (dBm): " + device.getHighestRssi());
+
         mViewModel.getButtonState().observe(this,
-                pressed -> mButtonState.setText(pressed ?
+                pressed -> tofState.setText(pressed ?
                         R.string.TOF_triggered : R.string.TOF_ready));
+
+        mViewModel.getPir1State().observe(this,
+                pressed -> {
+                    pirState1.setText(pressed ? R.string.pir_triggered : R.string.pir_ready);
+
+                });
+
+        mViewModel.getPir2State().observe(this,
+                pressed -> {
+                    pirState2.setText(pressed ? R.string.pir_triggered : R.string.pir_ready);
+
+                });
     }
 
     @OnClick(R.id.action_clear_cache)
@@ -86,7 +108,9 @@ public class BlinkyActivity extends AppCompatActivity {
 
     private void onConnectionStateChanged(final boolean connected) {
         if (!connected) {
-            mButtonState.setText(R.string.button_unknown);
+            tofState.setText(R.string.button_unknown);
+            pirState1.setText(R.string.button_unknown);
+            pirState2.setText(R.string.button_unknown);
         }
     }
 }

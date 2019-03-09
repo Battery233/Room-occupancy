@@ -20,16 +20,12 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.github.battery233.roomOccupancy.profile;
+package io.github.battery233.roomOccupancy.profile.callback;
 
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyLedCallback;
+import android.bluetooth.BluetoothDevice;
 
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyPir1Callback;
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyPir2Callback;
-import no.nordicsemi.android.ble.BleManagerCallbacks;
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyButtonCallback;
+import androidx.annotation.NonNull;
 
-public interface BlinkyManagerCallbacks extends BleManagerCallbacks,
-        BlinkyButtonCallback, BlinkyLedCallback, BlinkyPir1Callback, BlinkyPir2Callback {
-    // No more methods
+public interface BlinkyPir1Callback {
+    void onPir1StateChanged(@NonNull final BluetoothDevice device, final boolean pressed);
 }

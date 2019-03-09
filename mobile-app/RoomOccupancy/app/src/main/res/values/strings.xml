@@ -27,7 +27,7 @@
 	<string name="title">@string/app_name</string>
 
 	<string name="menu_filter">Filter</string>
-	<string name="menu_filter_uuid">Only devices advertising LBS UUID</string>
+	<string name="menu_filter_uuid">Devices with valid UUID</string>
 	<string name="menu_filter_nearby">Only nearby devices</string>
 
 	<string name="unknown_device">N/A</string>
@@ -76,5 +76,7 @@
 	<string name="PIR_sensor_2">PIR sensor 2</string>
 	<string name="TOF_triggered">TOF triggered</string>
 	<string name="TOF_ready">TOF ready</string>
+    <string name="pir_triggered">PIR triggered</string>
+    <string name="pir_ready">PIR ready</string>
 	<string name="contentDescription">not given</string>
 </resources>

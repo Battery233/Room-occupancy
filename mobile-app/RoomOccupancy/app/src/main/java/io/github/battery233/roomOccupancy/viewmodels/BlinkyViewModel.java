@@ -62,6 +62,8 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     // Flag that holds the pressed released state of the button on the devkit.
     // Pressed is true, Released is false
     private final MutableLiveData<Boolean> mButtonState = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> mPir1State = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> mPir2State = new MutableLiveData<>();
 
     public LiveData<Void> isDeviceReady() {
         return mOnDeviceReady;
@@ -79,8 +81,12 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
         return mButtonState;
     }
 
-    public LiveData<Boolean> getLEDState() {
-        return mLEDState;
+    public LiveData<Boolean> getPir1State() {
+        return mPir1State;
+    }
+
+    public LiveData<Boolean> getPir2State() {
+        return mPir2State;
     }
 
     public LiveData<Boolean> isSupported() {
@@ -146,6 +152,16 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     }
 
     @Override
+    public void onPir1StateChanged(@NonNull final BluetoothDevice device, final boolean pressed) {
+        mPir1State.postValue(pressed);
+    }
+
+    @Override
+    public void onPir2StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
+        mPir2State.postValue(pressed);
+    }
+
+    @Override
     public void onLedStateChanged(@NonNull final BluetoothDevice device, final boolean on) {
         mLEDState.postValue(on);
     }
@@ -207,7 +223,7 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     @Override
     public void onError(@NonNull final BluetoothDevice device,
                         @NonNull final String message, final int errorCode) {
-        // TODO implement
+        // not implemented
     }
 
     @Override

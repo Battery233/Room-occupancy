@@ -20,16 +20,34 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package io.github.battery233.roomOccupancy.profile;
+package io.github.battery233.roomOccupancy.profile.callback;
 
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyLedCallback;
+import android.bluetooth.BluetoothDevice;
 
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyPir1Callback;
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyPir2Callback;
-import no.nordicsemi.android.ble.BleManagerCallbacks;
-import io.github.battery233.roomOccupancy.profile.callback.BlinkyButtonCallback;
+import androidx.annotation.NonNull;
 
-public interface BlinkyManagerCallbacks extends BleManagerCallbacks,
-        BlinkyButtonCallback, BlinkyLedCallback, BlinkyPir1Callback, BlinkyPir2Callback {
-    // No more methods
+import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
+import no.nordicsemi.android.ble.data.Data;
+
+@SuppressWarnings("ConstantConditions")
+public abstract class BlinkyPir1DataCallback implements ProfileDataCallback, BlinkyPir1Callback {
+    private static final int STATE_RELEASED = 0x00;
+    private static final int STATE_PRESSED = 0x01;
+
+    @Override
+    public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+        if (data.size() != 1) {
+            onInvalidDataReceived(device, data);
+            return;
+        }
+
+        final int state = data.getIntValue(Data.FORMAT_UINT8, 0);
+        if (state == STATE_PRESSED) {
+            onPir1StateChanged(device, true);
+        } else if (state == STATE_RELEASED) {
+            onPir1StateChanged(device, false);
+        } else {
+            onInvalidDataReceived(device, data);
+        }
+    }
 }

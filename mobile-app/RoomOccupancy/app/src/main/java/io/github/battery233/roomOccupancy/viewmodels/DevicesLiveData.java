@@ -24,7 +24,7 @@ public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
     private static final ParcelUuid FILTER_UUID_2 = new ParcelUuid(BlinkyManager.UUID_SERVICE_2);
     private static final ParcelUuid FILTER_UUID_3 = new ParcelUuid(BlinkyManager.UUID_SERVICE_3);
 
-    private static final int FILTER_RSSI = -50; // [dBm]
+    private static final int FILTER_RSSI = -60; // [dBm]
 
     private final List<DiscoveredBluetoothDevice> mDevices = new ArrayList<>();
     private List<DiscoveredBluetoothDevice> mFilteredDevices = null;
@@ -126,10 +126,8 @@ public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
             return false;
 
         final List<ParcelUuid> uuids = record.getServiceUuids();
-        if (uuids == null)
-            return false;
-
-        return uuids.contains(FILTER_UUID) && uuids.contains(FILTER_UUID_2) && uuids.contains(FILTER_UUID_3);
+        return uuids != null;
+//        return uuids.contains(FILTER_UUID) && uuids.contains(FILTER_UUID_2) && uuids.contains(FILTER_UUID_3);
     }
 
     @SuppressWarnings("SimplifiableIfStatement")

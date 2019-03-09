@@ -12,6 +12,8 @@ import androidx.annotation.Nullable;
 
 import java.util.UUID;
 
+import io.github.battery233.roomOccupancy.profile.callback.BlinkyPir1DataCallback;
+import io.github.battery233.roomOccupancy.profile.callback.BlinkyPir2DataCallback;
 import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.data.Data;
 import io.github.battery233.roomOccupancy.profile.callback.BlinkyButtonDataCallback;
@@ -27,19 +29,13 @@ public class BlinkyManager extends BleManager<BlinkyManagerCallbacks> {
     public final static UUID UUID_SERVICE_2 = UUID.fromString("0000ab10-0000-1000-8000-00805f9b34fb");
     public final static UUID UUID_SERVICE_3 = UUID.fromString("0000ab20-0000-1000-8000-00805f9b34fb");
 
-    /**
-     * BUTTON characteristic UUID.
-     */
-    private final static UUID LBS_UUID_BUTTON_CHAR = UUID.fromString("0000ab01-0000-1000-8000-00805f9b34fb");
-    /**
-     * LED characteristic UUID.
-     */
-    private final static UUID LBS_UUID_LED_CHAR = UUID.fromString("0000ab11-0000-1000-8000-00805f9b34fb");
+    private final static UUID UUID_TOF_CHAR = UUID.fromString("0000ab01-0000-1000-8000-00805f9b34fb");
+    private final static UUID UUID_PIR1_CHAR = UUID.fromString("0000ab11-0000-1000-8000-00805f9b34fb");
+    private final static UUID UUID_PIR2_CHAR = UUID.fromString("0000ab21-0000-1000-8000-00805f9b34fb");
 
-    private BluetoothGattCharacteristic mButtonCharacteristic, mLedCharacteristic;
+    private BluetoothGattCharacteristic mTofCharacteristic, mPir1Characteristic, mPir2Characteristic;
     private LogSession mLogSession;
     private boolean mSupported;
-    private boolean mLedOn;
 
     public BlinkyManager(@NonNull final Context context) {
         super(context);
@@ -80,7 +76,7 @@ public class BlinkyManager extends BleManager<BlinkyManagerCallbacks> {
      * Otherwise, the {@link BlinkyButtonDataCallback#onInvalidDataReceived(BluetoothDevice, Data)}
      * will be called with the data received.
      */
-    private final BlinkyButtonDataCallback mButtonCallback = new BlinkyButtonDataCallback() {
+    private final BlinkyButtonDataCallback mTofCallBack = new BlinkyButtonDataCallback() {
         @Override
         public void onButtonStateChanged(@NonNull final BluetoothDevice device,
                                          final boolean pressed) {
@@ -95,26 +91,47 @@ public class BlinkyManager extends BleManager<BlinkyManagerCallbacks> {
         }
     };
 
+    private final BlinkyPir1DataCallback mPir1CallBack = new BlinkyPir1DataCallback() {
 
+        @Override
+        public void onPir1StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
+            mCallbacks.onPir1StateChanged(device, pressed);
+        }
+    };
 
+    private final BlinkyPir2DataCallback mPir2CallBack = new BlinkyPir2DataCallback() {
+
+        @Override
+        public void onPir2StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
+            mCallbacks.onPir2StateChanged(device, pressed);
+        }
+    };
     /**
      * BluetoothGatt callbacks object.
      */
     private final BleManagerGattCallback mGattCallback = new BleManagerGattCallback() {
         @Override
         protected void initialize() {
-            setNotificationCallback(mButtonCharacteristic).with(mButtonCallback);
-            readCharacteristic(mButtonCharacteristic).with(mButtonCallback).enqueue();
-            enableNotifications(mButtonCharacteristic).enqueue();
+            setNotificationCallback(mTofCharacteristic).with(mTofCallBack);
+            readCharacteristic(mTofCharacteristic).with(mTofCallBack).enqueue();
+            enableNotifications(mTofCharacteristic).enqueue();
+            setNotificationCallback(mPir1Characteristic).with(mPir1CallBack);
+            enableNotifications(mPir1Characteristic).enqueue();
+            readCharacteristic(mPir1Characteristic).with(mPir1CallBack).enqueue();
+            setNotificationCallback(mPir2Characteristic).with(mPir2CallBack);
+            readCharacteristic(mPir2Characteristic).with(mPir2CallBack).enqueue();
+            enableNotifications(mPir2Characteristic).enqueue();
         }
 
         @Override
         public boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
             final BluetoothGattService service = gatt.getService(UUID_SERVICE);
             final BluetoothGattService service2 = gatt.getService(UUID_SERVICE_2);
-            if (service != null && service2 != null) {
-                mButtonCharacteristic = service.getCharacteristic(LBS_UUID_BUTTON_CHAR);
-                mLedCharacteristic = service2.getCharacteristic(LBS_UUID_LED_CHAR);
+            final BluetoothGattService service3 = gatt.getService(UUID_SERVICE_3);
+            if (service != null && service2 != null && service3 != null) {
+                mTofCharacteristic = service.getCharacteristic(UUID_TOF_CHAR);
+                mPir1Characteristic = service2.getCharacteristic(UUID_PIR1_CHAR);
+                mPir2Characteristic = service3.getCharacteristic(UUID_PIR2_CHAR);
             }
 
 //			boolean writeRequest = false;
@@ -123,14 +140,15 @@ public class BlinkyManager extends BleManager<BlinkyManagerCallbacks> {
 //				writeRequest = (rxProperties & BluetoothGattCharacteristic.PROPERTY_WRITE) > 0;
 //			}
 
-            mSupported = mButtonCharacteristic != null && mLedCharacteristic != null; //&& writeRequest;
+            mSupported = mTofCharacteristic != null;// && mPir1Characteristic != null && mPir2Characteristic != null; //&& writeRequest;
             return mSupported;
         }
 
         @Override
         protected void onDeviceDisconnected() {
-            mButtonCharacteristic = null;
-            mLedCharacteristic = null;
+            mTofCharacteristic = null;
+            mPir1Characteristic = null;
+            mPir2Characteristic = null;
         }
     };
 }
