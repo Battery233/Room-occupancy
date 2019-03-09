@@ -25,21 +25,24 @@
 	This has to be a CoordinatorLayout, or any other layout that dispatches insets
 	to its children, as the image is to be drawn behind status bar as well.
 -->
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:fitsSystemWindows="true"
-	tools:context=".SplashScreenActivity"
-	tools:ignore="ContentDescription">
+	tools:context=".SplashScreenActivity" >
 
-	<androidx.appcompat.widget.AppCompatImageView
+	<ImageView
+		android:id="@+id/ruler"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:fitsSystemWindows="true"
-		android:scaleType="centerCrop"
-		android:background="@color/colorNordicLogoTop"
-		app:srcCompat="@drawable/nordic_logo"/>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+		android:layout_marginStart="8dp"
+		android:layout_marginTop="8dp"
+		android:layout_marginBottom="8dp"
+		android:src="@drawable/ruler"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintTop_toTopOf="parent"
+		android:contentDescription="@string/contentDescription" />
+</androidx.constraintlayout.widget.ConstraintLayout>

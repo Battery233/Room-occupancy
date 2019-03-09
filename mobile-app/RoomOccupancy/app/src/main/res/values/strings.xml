@@ -70,4 +70,11 @@
 	<string name="state_discovering_services">Discovering services…</string>
 	<string name="state_initializing">Initializing…</string>
 	<string name="state_disconnected">Device disconnected.</string>
+
+	<string name="Distance_sensor_1">Distance sensor 1</string>
+	<string name="PIR_sensor_1">PIR sensor 1</string>
+	<string name="PIR_sensor_2">PIR sensor 2</string>
+	<string name="TOF_triggered">TOF triggered</string>
+	<string name="TOF_ready">TOF ready</string>
+	<string name="contentDescription">not given</string>
 </resources>
