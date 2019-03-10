@@ -1,41 +1,58 @@
 #include "mbed.h"
-#include "vl53l0x_api.h"
-#include "vl53l0x_platform.h"
-#include "vl53l0x_i2c_platform.h"
-#include "tof.h"
-
 #include "ble/BLE.h"
-
-#define USE_I2C_2V8
-
-// IMPORTAINT used with library: https://codeload.github.com/ARMmbed/VL53L0X-mbedOS/zip/master
-// Change the first line after includes in file vl53l0x_i2c_platform.cpp to:
-// I2C i2c(p30, p7);
+#include "VL53L0X.h"
 
 Serial pc(USBTX, USBRX);
 DigitalOut led(LED1);
 
+// two pir sensors
 #define PIR_PIN_1 p14
 DigitalIn pir_1(p14, PullNone);
 #define PIR_PIN_2 p15
 DigitalIn pir_2(p15, PullNone);
 
-uint16_t disServiceUUID  = 0xAB00;
-uint16_t distanceCharUUID      = 0xAB01;
-uint16_t pirServiceUUID_1      = 0xAB10;
-uint16_t pirCharUUID_1      = 0xAB11;
-uint16_t pirServiceUUID_2      = 0xAB20;
-uint16_t pirCharUUID_2      = 0xAB21;
+// define distance range
+#define DISTANCE_MIN 10
+#define DISTANCE_MAX 500
+//distance sensors
+#define tof_address_1 (0x29)
+#define tof_address_2 (0x30)
+#define tof_sensor_1_SHUT   p16
+#define tof_sensor_2_SHUT   p17
+#define I2C_SCL   p7
+#define I2C_SDA   p30
+static DevI2C devI2c(I2C_SDA, I2C_SCL);
+static DigitalOut shutdown1_pin(tof_sensor_1_SHUT);
+static DigitalOut shutdown2_pin(tof_sensor_2_SHUT);
+static VL53L0X tof_sensor_1(&devI2c, &shutdown1_pin, NC);
+static VL53L0X tof_sensor_2(&devI2c, &shutdown2_pin, NC);
 
+// UUID setup
+uint16_t disServiceUUID_1  = 0xAB00;
+uint16_t distanceCharUUID_1      = 0xAB01;
+uint16_t disServiceUUID_2      = 0xAB10;
+uint16_t distanceCharUUID_2      = 0xAB11;
+uint16_t pirServiceUUID_1      = 0xAB20;
+uint16_t pirCharUUID_1      = 0xAB21;
+uint16_t pirServiceUUID_2      = 0xAB30;
+uint16_t pirCharUUID_2      = 0xAB31;
+
+// device info
 const static char     DEVICE_NAME[]        = "OMG"; // change this
 static const uint16_t uuid16_list[]        = {0xFFFF}; //Custom UUID, FFFF is reserved for development
 
 // payload
 static uint8_t readValue = 0;
 
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar(distanceCharUUID, &readValue,
+// gatt chars
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_1(distanceCharUUID_1, &readValue,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ |
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
+
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_2(distanceCharUUID_2, &readValue,
+        GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ |
+        GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
+
 
 ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_1(pirCharUUID_1, &readValue,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ |
@@ -46,12 +63,15 @@ ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_2(pirCharUUI
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY );
 
 /* Set up custom service */
-GattCharacteristic *characteristics[] = {&distanceChar};
-GattService distanceService(disServiceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic *));
-GattCharacteristic *characteristics_2[] = {&pirChar_1};
-GattService pirService_1(pirServiceUUID_1, characteristics_2, sizeof(characteristics_2) / sizeof(GattCharacteristic *));
-GattCharacteristic *characteristics_3[] = {&pirChar_2};
-GattService pirService_2(pirServiceUUID_2, characteristics_3, sizeof(characteristics_3) / sizeof(GattCharacteristic *));
+GattCharacteristic *characteristics_1[] = {&distanceChar_1};
+GattService distanceService_1(disServiceUUID_1, characteristics_1, sizeof(characteristics_1) / sizeof(GattCharacteristic *));
+GattCharacteristic *characteristics_2[] = {&distanceChar_2};
+GattService distanceService_2(disServiceUUID_2, characteristics_2, sizeof(characteristics_2) / sizeof(GattCharacteristic *));
+GattCharacteristic *characteristics_3[] = {&pirChar_1};
+GattService pirService_1(pirServiceUUID_1, characteristics_3, sizeof(characteristics_3) / sizeof(GattCharacteristic *));
+GattCharacteristic *characteristics_4[] = {&pirChar_2};
+GattService pirService_2(pirServiceUUID_2, characteristics_4, sizeof(characteristics_4) / sizeof(GattCharacteristic *));
+
 /*
  *  Restart advertising when phone app disconnects
 */
@@ -82,7 +102,8 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
     ble.gap().setAdvertisingInterval(100); // 100ms.
 
     /* Add our custom service */
-    ble.addService(distanceService);
+    ble.addService(distanceService_1);
+    ble.addService(distanceService_2);
     ble.addService(pirService_1);
     ble.addService(pirService_2);
 
@@ -92,10 +113,6 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext *params)
 
 int main()
 {
-
-    /* initialize stuff */
-    printf("\n\r********* Start device*********\n\r");
-
     BLE& ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
     ble.init(bleInitComplete);
 
@@ -103,55 +120,31 @@ int main()
      * BLE object is used in the main loop below. */
     while (ble.hasInitialized()  == false) { /* spin loop */ }
 
-    int measure=0;
-    VL53L0X_Dev_t MyDevice;
-    VL53L0X_Dev_t *pMyDevice = &MyDevice;
-    VL53L0X_RangingMeasurementData_t    RangingMeasurementData;
-    VL53L0X_RangingMeasurementData_t   *pRangingMeasurementData    = &RangingMeasurementData;
-//    VL53L0X_Version_t                   Version;
-
-    // Initialize Comms
-    pMyDevice->I2cDevAddr      = 0x52;
-    pMyDevice->comms_type      =  1;
-    pMyDevice->comms_speed_khz =  400;
-
-//    VL53L0X_ERROR_CONTROL_INTERFACE;
-    VL53L0X_RdWord(&MyDevice, VL53L0X_REG_OSC_CALIBRATE_VAL,0);
-    VL53L0X_DataInit(&MyDevice); // Data initialization
-//    VL53L0X_Error Status = VL53L0X_ERROR_NONE;
-    uint32_t refSpadCount;
-    uint8_t isApertureSpads;
-    uint8_t VhvSettings;
-    uint8_t PhaseCal;
-
-    VL53L0X_StaticInit(pMyDevice); // Device Initialization
-    VL53L0X_PerformRefSpadManagement(pMyDevice, &refSpadCount, &isApertureSpads); // Device Initialization
-    VL53L0X_PerformRefCalibration(pMyDevice, &VhvSettings, &PhaseCal); // Device Initialization
-    VL53L0X_SetDeviceMode(pMyDevice, VL53L0X_DEVICEMODE_CONTINUOUS_RANGING); // Setup in single ranging mode
-    VL53L0X_SetLimitCheckValue(pMyDevice, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, (FixPoint1616_t)(0.25*65536)); //High Accuracy mode, see API PDF
-    VL53L0X_SetLimitCheckValue(pMyDevice, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, (FixPoint1616_t)(18*65536)); //High Accuracy mode, see API PDF
-    VL53L0X_SetMeasurementTimingBudgetMicroSeconds(pMyDevice, 200000); //High Accuracy mode, see API PDF
-    VL53L0X_StartMeasurement(pMyDevice);
+    //init tof sensors
+    tof_sensor_1.init_sensor(tof_address_1);
+    tof_sensor_2.init_sensor(tof_address_2);
 
     int pir_on = 0;
+    uint32_t distance1;
+    uint32_t distance2;
+    printf("\n\r********* Device ready!*********\n\r");
 
     while(1) {
-
-        //ToF sensor
-        WaitMeasurementDataReady(pMyDevice);
-        VL53L0X_GetRangingMeasurementData(pMyDevice, pRangingMeasurementData);
-        measure=pRangingMeasurementData->RangeMilliMeter;
-        printf("In loop measurement %d\r\n", measure);
+        uint8_t distance_boolean;
         led=!led;
-        // Clear the interrupt
-        VL53L0X_ClearInterruptMask(pMyDevice, VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
-        VL53L0X_PollingDelay(pMyDevice);
 
-        uint8_t distance_boolean = measure>10 && measure<500? 1 : 0;
+        tof_sensor_1.get_distance(&distance1);
+        tof_sensor_2.get_distance(&distance2);
+        printf("Distance: %d, %d\r\n", distance1, distance2);
 
-        //get string and send via bluetooth
+        //        get string and send via bluetooth
+        distance_boolean = distance1>DISTANCE_MIN && distance1<DISTANCE_MAX? 1 : 0;
         memcpy(&readValue, &distance_boolean, sizeof(distance_boolean));
-        ble.updateCharacteristicValue(distanceChar.getValueHandle(), &readValue, sizeof(readValue));
+        ble.updateCharacteristicValue(distanceChar_1.getValueHandle(), &readValue, sizeof(readValue));
+
+        distance_boolean = distance2>DISTANCE_MIN && distance2<DISTANCE_MAX? 1 : 0;
+        memcpy(&readValue, &distance_boolean, sizeof(distance_boolean));
+        ble.updateCharacteristicValue(distanceChar_2.getValueHandle(), &readValue, sizeof(readValue));
 
         //set pir value
         if(pir_1==0x00) {
@@ -176,9 +169,6 @@ int main()
         ble.updateCharacteristicValue(pirChar_2.getValueHandle(), &readValue, sizeof(readValue));
 
         //wait
-        wait(0.01);
+        wait(0.005);
     }
-    //VL53L0X_StopMeasurement(pMyDevice);
-//    WaitStopCompleted(pMyDevice);
-//    VL53L0X_ClearInterruptMask(pMyDevice,VL53L0X_REG_SYSTEM_INTERRUPT_GPIO_NEW_SAMPLE_READY);
 }
