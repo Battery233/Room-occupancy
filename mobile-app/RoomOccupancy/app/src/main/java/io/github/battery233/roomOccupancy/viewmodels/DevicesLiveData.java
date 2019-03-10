@@ -1,15 +1,13 @@
 package io.github.battery233.roomOccupancy.viewmodels;
 
-import androidx.lifecycle.LiveData;
-
 import android.os.ParcelUuid;
-
-import io.github.battery233.roomOccupancy.adapter.DiscoveredBluetoothDevice;
-import io.github.battery233.roomOccupancy.profile.BlinkyManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.lifecycle.LiveData;
+import io.github.battery233.roomOccupancy.adapter.DiscoveredBluetoothDevice;
+import io.github.battery233.roomOccupancy.profile.BlinkyManager;
 import no.nordicsemi.android.support.v18.scanner.ScanRecord;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
 
@@ -21,8 +19,6 @@ import no.nordicsemi.android.support.v18.scanner.ScanResult;
 @SuppressWarnings("unused")
 public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
     private static final ParcelUuid FILTER_UUID = new ParcelUuid(BlinkyManager.UUID_SERVICE);
-    private static final ParcelUuid FILTER_UUID_2 = new ParcelUuid(BlinkyManager.UUID_SERVICE_2);
-    private static final ParcelUuid FILTER_UUID_3 = new ParcelUuid(BlinkyManager.UUID_SERVICE_3);
 
     private static final int FILTER_RSSI = -60; // [dBm]
 

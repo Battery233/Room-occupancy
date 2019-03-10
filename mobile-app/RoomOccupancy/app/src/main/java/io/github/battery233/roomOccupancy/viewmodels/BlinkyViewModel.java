@@ -1,69 +1,44 @@
-/*
- * Copyright (c) 2018, Nordic Semiconductor
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this
- * software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package io.github.battery233.roomOccupancy.viewmodels;
 
 import android.app.Application;
+import android.bluetooth.BluetoothDevice;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-
-import android.bluetooth.BluetoothDevice;
-
+import io.github.battery233.roomOccupancy.R;
 import io.github.battery233.roomOccupancy.adapter.DiscoveredBluetoothDevice;
 import io.github.battery233.roomOccupancy.profile.BlinkyManager;
 import io.github.battery233.roomOccupancy.profile.BlinkyManagerCallbacks;
-
-import androidx.annotation.NonNull;
-
-import io.github.battery233.roomOccupancy.R;
 import no.nordicsemi.android.log.LogSession;
 import no.nordicsemi.android.log.Logger;
 
 public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCallbacks {
     private final BlinkyManager mBlinkyManager;
-    private BluetoothDevice mDevice;
-
     // Connection states Connecting, Connected, Disconnecting, Disconnected etc.
     private final MutableLiveData<String> mConnectionState = new MutableLiveData<>();
-
     // Flag to determine if the device is connected
     private final MutableLiveData<Boolean> mIsConnected = new MutableLiveData<>();
-
     // Flag to determine if the device has required services
     private final MutableLiveData<Boolean> mIsSupported = new MutableLiveData<>();
-
     // Flag to determine if the device is ready
     private final MutableLiveData<Void> mOnDeviceReady = new MutableLiveData<>();
-
-    // Flag that holds the on off state of the LED. On is true, Off is False
-    private final MutableLiveData<Boolean> mLEDState = new MutableLiveData<>();
-
     // Flag that holds the pressed released state of the button on the devkit.
     // Pressed is true, Released is false
-    private final MutableLiveData<Boolean> mButtonState = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> mDistance1State = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> mDistance2State = new MutableLiveData<>();
     private final MutableLiveData<Boolean> mPir1State = new MutableLiveData<>();
     private final MutableLiveData<Boolean> mPir2State = new MutableLiveData<>();
+    private BluetoothDevice mDevice;
+
+    public BlinkyViewModel(@NonNull final Application application) {
+        super(application);
+
+        // Initialize the manager
+        mBlinkyManager = new BlinkyManager(getApplication());
+        mBlinkyManager.setGattCallbacks(this);
+    }
 
     public LiveData<Void> isDeviceReady() {
         return mOnDeviceReady;
@@ -77,8 +52,12 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
         return mIsConnected;
     }
 
-    public LiveData<Boolean> getButtonState() {
-        return mButtonState;
+    public LiveData<Boolean> getDistance1State() {
+        return mDistance1State;
+    }
+
+    public LiveData<Boolean> getDistance2State() {
+        return mDistance2State;
     }
 
     public LiveData<Boolean> getPir1State() {
@@ -91,14 +70,6 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
 
     public LiveData<Boolean> isSupported() {
         return mIsSupported;
-    }
-
-    public BlinkyViewModel(@NonNull final Application application) {
-        super(application);
-
-        // Initialize the manager
-        mBlinkyManager = new BlinkyManager(getApplication());
-        mBlinkyManager.setGattCallbacks(this);
     }
 
     /**
@@ -147,8 +118,13 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     }
 
     @Override
-    public void onButtonStateChanged(@NonNull final BluetoothDevice device, final boolean pressed) {
-        mButtonState.postValue(pressed);
+    public void onDistance1StateChanged(@NonNull final BluetoothDevice device, final boolean pressed) {
+        mDistance1State.postValue(pressed);
+    }
+
+    @Override
+    public void onDistance2StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
+        mDistance2State.postValue(pressed);
     }
 
     @Override
@@ -159,11 +135,6 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     @Override
     public void onPir2StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
         mPir2State.postValue(pressed);
-    }
-
-    @Override
-    public void onLedStateChanged(@NonNull final BluetoothDevice device, final boolean on) {
-        mLEDState.postValue(on);
     }
 
     @Override

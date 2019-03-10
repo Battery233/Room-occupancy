@@ -82,7 +82,7 @@
                         app:titleTextColor="@android:color/black" />
 
                     <TextView
-                        android:id="@+id/tof_state"
+                        android:id="@+id/tof_state_1"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
@@ -116,12 +116,12 @@
                         app:layout_constraintRight_toRightOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:logo="@drawable/ic_radio_button_checked"
-                        app:title="@string/PIR_sensor_1"
+                        app:title="@string/Distance_sensor_2"
                         app:titleMarginStart="@dimen/toolbar_title_margin"
                         app:titleTextColor="@android:color/black" />
 
                     <TextView
-                        android:id="@+id/pir_state_1"
+                        android:id="@+id/tof_state_2"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
@@ -155,6 +155,46 @@
                         app:layout_constraintRight_toRightOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:logo="@drawable/ic_radio_button_checked"
+                        app:title="@string/PIR_sensor_1"
+                        app:titleMarginStart="@dimen/toolbar_title_margin"
+                        app:titleTextColor="@android:color/black" />
+
+                    <TextView
+                        android:id="@+id/pir_state_1"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:padding="@dimen/activity_horizontal_margin"
+                        android:text="@string/button_unknown"
+                        android:textStyle="bold"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/button_tool_bar_3" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/button_card_4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/activity_horizontal_margin"
+                android:background="@android:color/white"
+                app:cardElevation="1dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/button_container_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <androidx.appcompat.widget.Toolbar
+                        android:id="@+id/button_tool_bar_4"
+                        android:layout_width="0dp"
+                        android:layout_height="?actionBarSize"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:logo="@drawable/ic_radio_button_checked"
                         app:title="@string/PIR_sensor_2"
                         app:titleMarginStart="@dimen/toolbar_title_margin"
                         app:titleTextColor="@android:color/black" />
@@ -168,7 +208,7 @@
                         android:text="@string/button_unknown"
                         android:textStyle="bold"
                         app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toTopOf="@+id/button_tool_bar_3" />
+                        app:layout_constraintTop_toTopOf="@+id/button_tool_bar_4" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>

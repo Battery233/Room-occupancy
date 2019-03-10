@@ -1,18 +1,15 @@
 package io.github.battery233.roomOccupancy;
 
-import androidx.lifecycle.ViewModelProviders;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -22,17 +19,17 @@ import io.github.battery233.roomOccupancy.viewmodels.BlinkyViewModel;
 @SuppressWarnings("ConstantConditions")
 public class BlinkyActivity extends AppCompatActivity {
     public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
-
-    private BlinkyViewModel mViewModel;
-
-    @BindView(R.id.tof_state)
-    TextView tofState;
+    @BindView(R.id.tof_state_1)
+    TextView tofState_1;
+    @BindView(R.id.tof_state_2)
+    TextView tofState_2;
     @BindView(R.id.pir_state_1)
     TextView pirState1;
     @BindView(R.id.pir_state_2)
     TextView pirState2;
     @BindView(R.id.getHighestRssi)
     TextView getHighestRssi;
+    private BlinkyViewModel mViewModel;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -84,8 +81,12 @@ public class BlinkyActivity extends AppCompatActivity {
 
         getHighestRssi.setText("Bluetooth maximum signal strengeth (dBm): " + device.getHighestRssi());
 
-        mViewModel.getButtonState().observe(this,
-                pressed -> tofState.setText(pressed ?
+        mViewModel.getDistance1State().observe(this,
+                pressed -> tofState_1.setText(pressed ?
+                        R.string.TOF_triggered : R.string.TOF_ready));
+
+        mViewModel.getDistance2State().observe(this,
+                pressed -> tofState_2.setText(pressed ?
                         R.string.TOF_triggered : R.string.TOF_ready));
 
         mViewModel.getPir1State().observe(this,
@@ -108,7 +109,8 @@ public class BlinkyActivity extends AppCompatActivity {
 
     private void onConnectionStateChanged(final boolean connected) {
         if (!connected) {
-            tofState.setText(R.string.button_unknown);
+            tofState_1.setText(R.string.button_unknown);
+            tofState_2.setText(R.string.button_unknown);
             pirState1.setText(R.string.button_unknown);
             pirState2.setText(R.string.button_unknown);
         }

@@ -72,6 +72,7 @@
 	<string name="state_disconnected">Device disconnected.</string>
 
 	<string name="Distance_sensor_1">Distance sensor 1</string>
+	<string name="Distance_sensor_2">Distance sensor 2</string>
 	<string name="PIR_sensor_1">PIR sensor 1</string>
 	<string name="PIR_sensor_2">PIR sensor 2</string>
 	<string name="TOF_triggered">TOF triggered</string>
