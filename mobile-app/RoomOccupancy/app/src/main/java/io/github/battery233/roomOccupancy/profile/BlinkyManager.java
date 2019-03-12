@@ -42,14 +42,14 @@ public class BlinkyManager extends BleManager<BlinkyManagerCallbacks> {
     private final Distance1DataCallback mTof1CallBack = new Distance1DataCallback() {
         @Override
         public void onDistance1StateChanged(@NonNull final BluetoothDevice device,
-                                            final boolean pressed) {
+                                            final String pressed) {
             mCallbacks.onDistance1StateChanged(device, pressed);
         }
     };
     private final Distance2DataCallback mTof2CallBack = new Distance2DataCallback() {
         @Override
         public void onDistance2StateChanged(@NonNull final BluetoothDevice device,
-                                            final boolean pressed) {
+                                            final String pressed) {
             mCallbacks.onDistance2StateChanged(device, pressed);
         }
     };

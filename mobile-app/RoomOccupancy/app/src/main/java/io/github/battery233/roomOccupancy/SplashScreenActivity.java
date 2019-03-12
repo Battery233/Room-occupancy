@@ -48,8 +48,8 @@ public class SplashScreenActivity extends Activity {
 
         //upload to fire store: login timestamp
         db = FirebaseFirestore.getInstance();
-        CollectionReference data = db.collection("app started");
-        data.add(new loginTimeStamp(new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(new Date())))
+        CollectionReference data = db.collection("Login timestamp");
+        data.document("login time").set(new loginTimeStamp(new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(new Date())))
                 .addOnSuccessListener(documentReference ->
                         Toast.makeText(SplashScreenActivity.this, "Send login record success!", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e ->

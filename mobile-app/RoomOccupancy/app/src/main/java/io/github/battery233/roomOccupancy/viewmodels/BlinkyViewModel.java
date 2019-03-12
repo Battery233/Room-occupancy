@@ -26,8 +26,8 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     private final MutableLiveData<Void> mOnDeviceReady = new MutableLiveData<>();
     // Flag that holds the pressed released state of the button on the devkit.
     // Pressed is true, Released is false
-    private final MutableLiveData<Boolean> mDistance1State = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> mDistance2State = new MutableLiveData<>();
+    private final MutableLiveData<String> mDistance1State = new MutableLiveData<>();
+    private final MutableLiveData<String> mDistance2State = new MutableLiveData<>();
     private final MutableLiveData<Boolean> mPir1State = new MutableLiveData<>();
     private final MutableLiveData<Boolean> mPir2State = new MutableLiveData<>();
     private BluetoothDevice mDevice;
@@ -52,11 +52,11 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
         return mIsConnected;
     }
 
-    public LiveData<Boolean> getDistance1State() {
+    public LiveData<String> getDistance1State() {
         return mDistance1State;
     }
 
-    public LiveData<Boolean> getDistance2State() {
+    public LiveData<String> getDistance2State() {
         return mDistance2State;
     }
 
@@ -118,12 +118,12 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     }
 
     @Override
-    public void onDistance1StateChanged(@NonNull final BluetoothDevice device, final boolean pressed) {
+    public void onDistance1StateChanged(@NonNull final BluetoothDevice device, final String pressed) {
         mDistance1State.postValue(pressed);
     }
 
     @Override
-    public void onDistance2StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
+    public void onDistance2StateChanged(@NonNull BluetoothDevice device, String pressed) {
         mDistance2State.postValue(pressed);
     }
 

@@ -12,5 +12,5 @@ public interface Distance1Callback {
      * @param device  the target device.
      * @param pressed true if the button was pressed, false if released.
      */
-    void onDistance1StateChanged(@NonNull final BluetoothDevice device, final boolean pressed);
+    void onDistance1StateChanged(@NonNull final BluetoothDevice device, final String pressed);
 }

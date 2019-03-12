@@ -7,6 +7,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -20,9 +30,6 @@ import io.github.battery233.roomOccupancy.viewmodels.BlinkyViewModel;
 @SuppressWarnings("ConstantConditions")
 public class BlinkyActivity extends AppCompatActivity {
     public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
-    // TODO: change the MINIMUM_DISTANCE_SENSORS_GAP_TIME and bias value according to setup
-    public static final int MINIMUM_DISTANCE_SENSORS_GAP_TIME = 800;
-    public static final int MINIMUM_DISTANCE_SENSORS_GAP_TIME_BIAS = 200;
     @BindView(R.id.tof_state_1)
     TextView tofState_1;
     @BindView(R.id.tof_state_2)
@@ -33,18 +40,12 @@ public class BlinkyActivity extends AppCompatActivity {
     TextView pirState2;
     @BindView(R.id.getHighestRssi)
     TextView getHighestRssi;
-    @BindView(R.id.people_counter_text)
-    TextView peopleCounterText;
+    private FirebaseFirestore db;
     private BlinkyViewModel mViewModel;
-    private boolean leftDistance;
-    private boolean rightDistance;
-    private long leftDistanceTimeStamp;
-    private long rightDistanceTimeStamp;
-    private int in_count = 0;
-    private int out_count = 0;
-    private boolean out_recorded = false;
-    private boolean in_recorded = false;
-    private long timeGap;
+    private int status;
+    private String payloadString;
+    private int walkedOutCount = 0;
+    private int walkedInCount = 0;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -67,6 +68,9 @@ public class BlinkyActivity extends AppCompatActivity {
         // Configure the view model
         mViewModel = ViewModelProviders.of(this).get(BlinkyViewModel.class);
         mViewModel.connect(device);
+
+        db = FirebaseFirestore.getInstance();
+        CollectionReference data = db.collection("Raw Data");
 
         // Set up views
         final LinearLayout progressContainer = findViewById(R.id.progress_container);
@@ -96,29 +100,44 @@ public class BlinkyActivity extends AppCompatActivity {
 
         getHighestRssi.setText("Bluetooth maximum signal strengeth (dBm): " + device.getHighestRssi());
 
+        // get real time data of people in or out
         mViewModel.getDistance1State().observe(this,
                 triggered -> {
-                    leftTriggered(triggered);
-                    peopleCounterText.setText("People in: " + in_count + " People out: " + out_count);
+                    status = triggered.charAt(6) - 48;
+                    if (status == 1 || status == 2) {
+                        payloadString = status == 1 ? "IN" : "OUT";
+                        if (status == 1) walkedInCount++;
+                        else walkedOutCount++;
+                        HashMap<String, String> distanceSensorData = new HashMap<>();
+                        distanceSensorData.put(new SimpleDateFormat("HHmmss", Locale.UK).format(new Date()), payloadString);
+                        data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(new Date()))
+                                .set(distanceSensorData, SetOptions.merge())
+                                .addOnSuccessListener(documentReference ->
+                                        Toast.makeText(BlinkyActivity.this, "Someone walked " + payloadString, Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e ->
+                                        Toast.makeText(BlinkyActivity.this, "Send movement record fail!", Toast.LENGTH_SHORT).show());
+                        Log.d("Channel 1: ", "someone walks " + payloadString);
+                    }
+                    tofState_1.setText(walkedInCount + " in total");
+                    tofState_2.setText(walkedOutCount + " in total");
+                    Log.d("Channel 1 data: ", String.valueOf(status));
                 });
 
+        // get the data of people total in or out
         mViewModel.getDistance2State().observe(this,
                 triggered -> {
-                    rightTriggered(triggered);
-                    peopleCounterText.setText("People in: " + in_count + " People out: " + out_count);
+                    Log.d("Channel 2 data: ", "--" + triggered + "--");
                 });
 
         mViewModel.getPir1State().observe(this,
-                triggered -> {
-                    pirState1.setText(triggered ? R.string.pir_triggered : R.string.pir_ready);
-
-                });
+                triggered ->
+                        pirState1.setText(triggered ? R.string.pir_triggered : R.string.pir_ready)
+        );
 
         mViewModel.getPir2State().observe(this,
-                triggered -> {
-                    pirState2.setText(triggered ? R.string.pir_triggered : R.string.pir_ready);
-
-                });
+                triggered ->
+                        pirState2.setText(triggered ? R.string.pir_triggered : R.string.pir_ready)
+        );
     }
 
     @OnClick(R.id.action_clear_cache)
@@ -126,56 +145,13 @@ public class BlinkyActivity extends AppCompatActivity {
         mViewModel.reconnect();
     }
 
+    @SuppressLint("SetTextI18n")
     private void onConnectionStateChanged(final boolean connected) {
         if (!connected) {
             tofState_1.setText(R.string.button_unknown);
             tofState_2.setText(R.string.button_unknown);
             pirState1.setText(R.string.button_unknown);
             pirState2.setText(R.string.button_unknown);
-        }
-    }
-
-    public synchronized void leftTriggered(boolean triggered) {
-        tofState_1.setText(triggered ? R.string.TOF_triggered : R.string.TOF_ready);
-        leftDistance = triggered;
-        if (triggered) {
-            leftDistanceTimeStamp = System.currentTimeMillis();
-            if (!rightDistance) {
-                timeGap = System.currentTimeMillis() - rightDistanceTimeStamp;
-                Log.d("TimeGap recording: out",String.valueOf(timeGap));
-                if (timeGap < MINIMUM_DISTANCE_SENSORS_GAP_TIME + MINIMUM_DISTANCE_SENSORS_GAP_TIME_BIAS) {
-                    out_recorded = true;
-                }
-            }
-        } else {
-            if (!rightDistance) {
-                if (out_recorded) {
-                    out_recorded = false;
-                    out_count++;
-                }
-            }
-        }
-    }
-
-    public synchronized void rightTriggered(boolean triggered) {
-        tofState_2.setText(triggered ? R.string.TOF_triggered : R.string.TOF_ready);
-        rightDistance = triggered;
-        if (triggered) {
-            rightDistanceTimeStamp = System.currentTimeMillis();
-            if (!leftDistance) {
-                timeGap = System.currentTimeMillis() - leftDistanceTimeStamp;
-                Log.d("TimeGap recording: in",String.valueOf(timeGap));
-                if (timeGap < MINIMUM_DISTANCE_SENSORS_GAP_TIME) {
-                    in_recorded = true;
-                }
-            }
-        } else {
-            if (!leftDistance) {
-                if (in_recorded) {
-                    in_recorded = false;
-                    in_count++;
-                }
-            }
         }
     }
 }
