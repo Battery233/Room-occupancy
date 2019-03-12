@@ -46,6 +46,7 @@ public class BlinkyActivity extends AppCompatActivity {
     private String payloadString;
     private int walkedOutCount = 0;
     private int walkedInCount = 0;
+    private boolean offlineData = true;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -126,6 +127,14 @@ public class BlinkyActivity extends AppCompatActivity {
         // get the data of people total in or out
         mViewModel.getDistance2State().observe(this,
                 triggered -> {
+                    if (offlineData) {
+                        int in = 10 * (triggered.charAt(5) - 48) + triggered.charAt(6) - 48;
+                        int out = 10 * (triggered.charAt(8) - 48) + triggered.charAt(9) - 48;
+                        if (in != 0 || out != 0) {
+                            Toast.makeText(BlinkyActivity.this, "Offline data found! in: " + in + " out: " + out+ " Board timer = "+getTimeFromHex(triggered,6), Toast.LENGTH_LONG).show();
+                            offlineData = false;
+                        }
+                    }
                     Log.d("Channel 2 data: ", "--" + triggered + "--");
                 });
 
@@ -153,5 +162,16 @@ public class BlinkyActivity extends AppCompatActivity {
             pirState1.setText(R.string.button_unknown);
             pirState2.setText(R.string.button_unknown);
         }
+    }
+
+    private int getTimeFromHex(String s, int index){
+        //todo bug here
+        char[] c = new char[4];
+        c[0] = s.charAt(index+3);
+        c[1] = s.charAt(index+4);
+        c[2] = s.charAt(index+1);
+        c[3] = s.charAt(index);
+        Log.e("here!" + s,new String(c));
+        return Integer.parseInt(new String(c),16);
     }
 }
