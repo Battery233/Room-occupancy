@@ -41,12 +41,13 @@ static const uint16_t uuid16_list[] = { 0xFFFF }; //Custom UUID, FFFF is reserve
 
 // payload
 static uint8_t readValue = 0;
+static uint8_t readDoubleValue[2] = { 0 };
 
 // gatt chars
 ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_1(distanceCharUUID_1, &readValue,
     GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_2(distanceCharUUID_2, &readValue,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readDoubleValue)> distanceChar_2(distanceCharUUID_2, readDoubleValue,
     GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
 ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_1(pirCharUUID_1, &readValue,
@@ -59,11 +60,21 @@ ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_2(pirCharUUI
 GattCharacteristic* characteristics[] = { &distanceChar_1, &distanceChar_2, &pirChar_1, &pirChar_2 };
 GattService service(serviceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic*));
 
+static uint8_t bluetooth_connected;
+
+void connectionCallback(const Gap::ConnectionCallbackParams_t*)
+{
+    bluetooth_connected = 1;
+    printf("--connectionCallback--offline data sent and refreshed!--%d\r\n", bluetooth_connected);
+}
+
 /*
  *  Restart advertising when phone app disconnects
 */
 void disconnectionCallback(const Gap::DisconnectionCallbackParams_t*)
 {
+    bluetooth_connected = 0;
+    printf("--DisconnectionCallback--%d\r\n", bluetooth_connected);
     BLE::Instance(BLE::DEFAULT_INSTANCE).gap().startAdvertising();
 }
 
@@ -80,6 +91,7 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext* params)
     }
 
     ble.gap().onDisconnection(disconnectionCallback);
+    ble.gap().onConnection(connectionCallback);
 
     /* Setup advertising */
     ble.gap().accumulateAdvertisingPayload(GapAdvertisingData::BREDR_NOT_SUPPORTED | GapAdvertisingData::LE_GENERAL_DISCOVERABLE); // BLE only, no classic BT
@@ -97,6 +109,7 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext* params)
 
 int main()
 {
+    bluetooth_connected = 0;
     BLE& ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
     ble.init(bleInitComplete);
 
@@ -109,35 +122,94 @@ int main()
     tof_sensor_1.init_sensor(tof_address_1);
     tof_sensor_2.init_sensor(tof_address_2);
 
-    int pir_on = 0;
+    uint8_t pir_on = 0;
     uint32_t distance1;
     uint32_t distance2;
+    uint8_t distance_boolean_1;
+    uint8_t distance_boolean_2;
+    bool both_triggered = false;
+    bool only_left_triggered = false;
+    bool only_right_triggered = false;
+    bool logged = false;
+    uint8_t distance_in_or_out;
     printf("\n\r********* Device ready!*********\n\r");
 
     while (1) {
-        uint8_t distance_boolean;
         led = !led;
 
         tof_sensor_1.get_distance(&distance1);
         tof_sensor_2.get_distance(&distance2);
         printf("Distance: %d, %d\r\n", distance1, distance2);
 
+        distance_in_or_out = 0;
         //        get string and send via bluetooth
-        distance_boolean = distance1 > DISTANCE_MIN && distance1 < DISTANCE_MAX ? 1 : 0;
-        memcpy(&readValue, &distance_boolean, sizeof(distance_boolean));
+        distance_boolean_1 = distance1 > DISTANCE_MIN && distance1 < DISTANCE_MAX ? 1 : 0;
+        distance_boolean_2 = distance2 > DISTANCE_MIN && distance2 < DISTANCE_MAX ? 1 : 0;
+
+        //is people go in or out
+        //0 nothing, 1 in, 2 out
+        if (distance_boolean_1 && !distance_boolean_2) {
+            if (both_triggered || only_right_triggered) {
+                if (!logged) {
+                    logged = true;
+                    distance_in_or_out = 1;
+                }
+            }
+            only_left_triggered = true;
+            only_right_triggered = false;
+            both_triggered = false;
+        }
+        else if (!distance_boolean_1 && distance_boolean_2) {
+            if (both_triggered || only_left_triggered) {
+                if (!logged) {
+                    logged = true;
+                    distance_in_or_out = 2;
+                }
+            }
+            only_left_triggered = false;
+            only_right_triggered = true;
+            both_triggered = false;
+        }
+        else if (distance_boolean_1 && distance_boolean_2) {
+            if (only_left_triggered) {
+                distance_in_or_out = 2;
+                logged = true;
+            }
+            else if (only_right_triggered) {
+                distance_in_or_out = 1;
+                logged = true;
+            }
+            only_left_triggered = false;
+            only_right_triggered = false;
+            both_triggered = true;
+        }
+        else {
+            only_left_triggered = false;
+            only_right_triggered = false;
+            both_triggered = false;
+            logged = false;
+        }
+        printf("in and out: %d \r\n", distance_in_or_out);
+        memcpy(&readValue, &distance_in_or_out, sizeof(distance_in_or_out));
         ble.updateCharacteristicValue(distanceChar_1.getValueHandle(), &readValue, sizeof(readValue));
 
-        distance_boolean = distance2 > DISTANCE_MIN && distance2 < DISTANCE_MAX ? 1 : 0;
-        memcpy(&readValue, &distance_boolean, sizeof(distance_boolean));
-        ble.updateCharacteristicValue(distanceChar_2.getValueHandle(), &readValue, sizeof(readValue));
+        if (!bluetooth_connected) {
+            if (distance_in_or_out == 0x01)
+                readDoubleValue[0]++;
+            else if (distance_in_or_out == 0x02)
+                readDoubleValue[1]++;
+        }
+        printf("Offline? %d. Offline in and out: %d,%d \r\n", bluetooth_connected, readDoubleValue[0], readDoubleValue[1]);
+        ble.updateCharacteristicValue(distanceChar_2.getValueHandle(), readDoubleValue, sizeof(readValue) * 2);
 
+        printf("PIRs:");
         //set pir value
         if (pir_1 == 0x00) {
-            printf("PIR 1 off!\t");
+            printf("  off\t");
             pir_on = 0;
         }
         else {
-            printf("PIR 1 on!\t");
+            printf("  on\t");
             pir_on = 1;
         }
         memcpy(&readValue, &pir_on, sizeof(pir_on));
@@ -145,11 +217,11 @@ int main()
 
         //set pir value
         if (pir_2 == 0x00) {
-            printf("PIR 2 off!\r\n");
+            printf(" off!\r\n");
             pir_on = 0;
         }
         else {
-            printf("PIR 2 on!\r\n");
+            printf(" on!\r\n");
             pir_on = 1;
         }
         memcpy(&readValue, &pir_on, sizeof(pir_on));
