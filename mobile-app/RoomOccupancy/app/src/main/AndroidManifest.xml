@@ -22,7 +22,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="io.github.battery233.roomOccupancy">
+    package="io.github.battery233.room_occupancy">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -42,7 +42,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".SplashScreenActivity"
+            android:name="io.github.battery233.room_occupancy.SplashScreenActivity"
             android:launchMode="singleTop"
             android:noHistory="true"
             android:theme="@style/AppTheme.SplashScreen">
@@ -52,7 +52,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ScannerActivity"
+            android:name="io.github.battery233.room_occupancy.ScannerActivity"
             android:icon="@drawable/ic_blinky_feature"
             android:label="@string/feature_name"
             android:launchMode="singleTop">
@@ -62,9 +62,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name="io.github.battery233.room_occupancy.MainActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".ScannerActivity"></activity>
+            android:parentActivityName="io.github.battery233.room_occupancy.ScannerActivity" />
 
     </application>
 
