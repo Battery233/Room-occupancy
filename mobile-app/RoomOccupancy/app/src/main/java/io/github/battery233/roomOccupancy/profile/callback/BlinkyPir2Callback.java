@@ -5,5 +5,5 @@ import android.bluetooth.BluetoothDevice;
 import androidx.annotation.NonNull;
 
 public interface BlinkyPir2Callback {
-    void onPir2StateChanged(@NonNull final BluetoothDevice device, final boolean pressed);
+    void onPir2StateChanged(@NonNull final BluetoothDevice device, final String pressed);
 }

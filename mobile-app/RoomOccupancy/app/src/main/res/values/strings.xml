@@ -48,7 +48,7 @@
 
 	<string name="Distance_sensor_1">People walked in</string>
 	<string name="Distance_sensor_2">People walked out</string>
-	<string name="PIR_sensor_1">PIR sensor 1</string>
+	<string name="PIR_sensor_1">Offline data</string>
 	<string name="PIR_sensor_2">PIR sensor 2</string>
 	<string name="TOF_triggered">TOF triggered</string>
 	<string name="TOF_ready">TOF ready</string>

@@ -28,8 +28,8 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     // Pressed is true, Released is false
     private final MutableLiveData<String> mDistance1State = new MutableLiveData<>();
     private final MutableLiveData<String> mDistance2State = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> mPir1State = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> mPir2State = new MutableLiveData<>();
+    private final MutableLiveData<String> offlineInTimeStampsData = new MutableLiveData<>();
+    private final MutableLiveData<String> offlineOutTimeStampsData = new MutableLiveData<>();
     private BluetoothDevice mDevice;
 
     public BlinkyViewModel(@NonNull final Application application) {
@@ -60,12 +60,12 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
         return mDistance2State;
     }
 
-    public LiveData<Boolean> getPir1State() {
-        return mPir1State;
+    public LiveData<String> getOfflineInTimeStamps() {
+        return offlineInTimeStampsData;
     }
 
-    public LiveData<Boolean> getPir2State() {
-        return mPir2State;
+    public LiveData<String> getOfflineOutTimeStamps() {
+        return offlineOutTimeStampsData;
     }
 
     public LiveData<Boolean> isSupported() {
@@ -128,13 +128,13 @@ public class BlinkyViewModel extends AndroidViewModel implements BlinkyManagerCa
     }
 
     @Override
-    public void onPir1StateChanged(@NonNull final BluetoothDevice device, final boolean pressed) {
-        mPir1State.postValue(pressed);
+    public void onPir1StateChanged(@NonNull final BluetoothDevice device, final String pressed) {
+        offlineInTimeStampsData.postValue(pressed);
     }
 
     @Override
-    public void onPir2StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
-        mPir2State.postValue(pressed);
+    public void onPir2StateChanged(@NonNull BluetoothDevice device, String pressed) {
+        offlineOutTimeStampsData.postValue(pressed);
     }
 
     @Override

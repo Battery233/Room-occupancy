@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -28,25 +29,33 @@ import io.github.battery233.roomOccupancy.adapter.DiscoveredBluetoothDevice;
 import io.github.battery233.roomOccupancy.viewmodels.BlinkyViewModel;
 
 @SuppressWarnings("ConstantConditions")
-public class BlinkyActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
+    public static final int MAX_OFFLINE_DATA_LENGTH = 16;
     @BindView(R.id.tof_state_1)
     TextView tofState_1;
     @BindView(R.id.tof_state_2)
     TextView tofState_2;
-    @BindView(R.id.pir_state_1)
-    TextView pirState1;
+    @BindView(R.id.offline_data_card)
+    TextView offlineDataCard;
     @BindView(R.id.pir_state_2)
     TextView pirState2;
     @BindView(R.id.getHighestRssi)
     TextView getHighestRssi;
+    @BindView(R.id.button_card_4)
+    View buttonCard4;
     private FirebaseFirestore db;
     private BlinkyViewModel mViewModel;
     private int status;
     private String payloadString;
     private int walkedOutCount = 0;
     private int walkedInCount = 0;
-    private boolean offlineData = true;
+    private boolean offlineDataNumberNotRecorded = true;
+    private int offlineInData = 0;
+    private boolean offlineInCollected = false;
+    private int offlineOutData = 0;
+    private boolean offlineOutCollected = false;
+    private int boardOnlineTime = 0;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -78,6 +87,7 @@ public class BlinkyActivity extends AppCompatActivity {
         final TextView connectionState = findViewById(R.id.connection_state);
         final View content = findViewById(R.id.device_container);
         final View notSupported = findViewById(R.id.not_supported);
+        buttonCard4.setVisibility(View.GONE);
 
         mViewModel.isDeviceReady().observe(this, deviceReady -> {
             progressContainer.setVisibility(View.GONE);
@@ -114,9 +124,9 @@ public class BlinkyActivity extends AppCompatActivity {
                         data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(new Date()))
                                 .set(distanceSensorData, SetOptions.merge())
                                 .addOnSuccessListener(documentReference ->
-                                        Toast.makeText(BlinkyActivity.this, "Someone walked " + payloadString, Toast.LENGTH_SHORT).show())
+                                        Toast.makeText(MainActivity.this, "Someone walked " + payloadString, Toast.LENGTH_SHORT).show())
                                 .addOnFailureListener(e ->
-                                        Toast.makeText(BlinkyActivity.this, "Send movement record fail!", Toast.LENGTH_SHORT).show());
+                                        Toast.makeText(MainActivity.this, "Send movement record fail!", Toast.LENGTH_SHORT).show());
                         Log.d("Channel 1: ", "someone walks " + payloadString);
                     }
                     tofState_1.setText(walkedInCount + " in total");
@@ -127,25 +137,76 @@ public class BlinkyActivity extends AppCompatActivity {
         // get the data of people total in or out
         mViewModel.getDistance2State().observe(this,
                 triggered -> {
-                    if (offlineData) {
-                        int in = 10 * (triggered.charAt(5) - 48) + triggered.charAt(6) - 48;
-                        int out = 10 * (triggered.charAt(8) - 48) + triggered.charAt(9) - 48;
-                        if (in != 0 || out != 0) {
-                            Toast.makeText(BlinkyActivity.this, "Offline data found! in: " + in + " out: " + out+ " Board timer = "+getTimeFromHex(triggered,6), Toast.LENGTH_LONG).show();
-                            offlineData = false;
+                    if (offlineDataNumberNotRecorded) {
+                        offlineInData = 10 * (triggered.charAt(5) - 48) + triggered.charAt(6) - 48;
+                        offlineOutData = 10 * (triggered.charAt(8) - 48) + triggered.charAt(9) - 48;
+                        if (offlineInData != 0 || offlineOutData != 0) {
+                            boardOnlineTime = getValueFromHexString(triggered, 1);
+                            Toast.makeText(MainActivity.this, "Offline data found! in: " + offlineInData + " out: " + offlineOutData + " Board timer = " + boardOnlineTime, Toast.LENGTH_LONG).show();
+                            offlineDataNumberNotRecorded = false;
                         }
                     }
+                    offlineDataCard.setText("In: " + offlineInData + " Out: " + offlineOutData);
                     Log.d("Channel 2 data: ", "--" + triggered + "--");
                 });
 
-        mViewModel.getPir1State().observe(this,
-                triggered ->
-                        pirState1.setText(triggered ? R.string.pir_triggered : R.string.pir_ready)
+        mViewModel.getOfflineInTimeStamps().observe(this,
+                triggered -> {
+                    Log.d("Channel 3 data: ", "--" + triggered + "--");
+                    if (!offlineDataNumberNotRecorded && offlineInData != 0 && !offlineInCollected) {
+                        if (offlineInData > MAX_OFFLINE_DATA_LENGTH)
+                            offlineInData = MAX_OFFLINE_DATA_LENGTH;
+                        //get in data from offline record
+                        int i = 0;
+                        int timeStamp;
+                        Calendar time = Calendar.getInstance();
+                        HashMap<String, String> distanceSensorData = new HashMap<>();
+                        while (i < offlineInData) {
+                            timeStamp = getValueFromHexString(triggered, i);
+                            Log.d("Channel 3 data: ", "Offline in time No." + i + " at " + timeStamp);
+                            timeStamp = boardOnlineTime - timeStamp;
+                            time = Calendar.getInstance();
+                            time.add(Calendar.SECOND, -timeStamp);
+                            distanceSensorData.put(new SimpleDateFormat("HHmmss", Locale.UK).format(time.getTime()), "IN");
+                            Log.d("Channel 3 data: ", "Time when offline walking in happened " + new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(time.getTime()));
+                            i++;
+                        }
+                        data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(time.getTime()))
+                                .set(distanceSensorData, SetOptions.merge());
+                        Log.d("Channel 3 data: ", "Offline walking in logged, number = " + (i + 1));
+                        offlineInCollected = true;
+                    }
+                }
         );
 
-        mViewModel.getPir2State().observe(this,
+        mViewModel.getOfflineOutTimeStamps().observe(this,
                 triggered ->
-                        pirState2.setText(triggered ? R.string.pir_triggered : R.string.pir_ready)
+                {
+                    Log.d("Channel 4 data: ", "--" + triggered + "--");
+                    if (!offlineDataNumberNotRecorded && offlineOutData != 0 && !offlineOutCollected) {
+                        if (offlineOutData > MAX_OFFLINE_DATA_LENGTH)
+                            offlineOutData = MAX_OFFLINE_DATA_LENGTH;
+                        //get in data from offline record
+                        int i = 0;
+                        int timeStamp;
+                        Calendar time = Calendar.getInstance();
+                        HashMap<String, String> distanceSensorData = new HashMap<>();
+                        while (i < offlineOutData) {
+                            timeStamp = getValueFromHexString(triggered, i);
+                            Log.d("Channel 4 data: ", "Offline out time No." + i + " at " + timeStamp);
+                            timeStamp = boardOnlineTime - timeStamp;
+                            time = Calendar.getInstance();
+                            time.add(Calendar.SECOND, -timeStamp);
+                            distanceSensorData.put(new SimpleDateFormat("HHmmss", Locale.UK).format(time.getTime()), "OUT");
+                            Log.d("Channel 4 data: ", "Time when offline walking out happened " + new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(time.getTime()));
+                            i++;
+                        }
+                        data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(time.getTime()))
+                                .set(distanceSensorData, SetOptions.merge());
+                        Log.d("Channel 4 data: ", "Offline walking out logged, number = " + (i + 1));
+                        offlineOutCollected = true;
+                    }
+                }
         );
     }
 
@@ -159,19 +220,20 @@ public class BlinkyActivity extends AppCompatActivity {
         if (!connected) {
             tofState_1.setText(R.string.button_unknown);
             tofState_2.setText(R.string.button_unknown);
-            pirState1.setText(R.string.button_unknown);
+            offlineDataCard.setText(R.string.button_unknown);
             pirState2.setText(R.string.button_unknown);
         }
     }
 
-    private int getTimeFromHex(String s, int index){
-        //todo bug here
+    //index--> the 16 bit number in the string you want. start from 0
+    private int getValueFromHexString(String s, int offset) {
+        offset = 5 + offset * 6;
         char[] c = new char[4];
-        c[0] = s.charAt(index+3);
-        c[1] = s.charAt(index+4);
-        c[2] = s.charAt(index+1);
-        c[3] = s.charAt(index);
-        Log.e("here!" + s,new String(c));
-        return Integer.parseInt(new String(c),16);
+        c[0] = s.charAt(offset + 3);
+        c[1] = s.charAt(offset + 4);
+        c[2] = s.charAt(offset);
+        c[3] = s.charAt(offset + 1);
+        Log.e("here!" + s, new String(c));
+        return Integer.parseInt(new String(c), 16);
     }
 }

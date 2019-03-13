@@ -15,6 +15,8 @@ DigitalIn pir_2(p15, PullNone);
 #define DISTANCE_MIN 10
 #define DISTANCE_MAX 500
 
+#define OFFLINE_TIME_STAMP_SIZE 32 // 2 for each timestamp
+
 //distance sensors
 #define tof_address_1 (0x29)
 #define tof_address_2 (0x30)
@@ -42,6 +44,8 @@ static const uint16_t uuid16_list[] = { 0xFFFF }; //Custom UUID, FFFF is reserve
 // payload
 static uint8_t readValue = 0;
 static uint8_t offlineDoubleValue[4] = {0};
+static uint8_t offlineTimeValueIn[OFFLINE_TIME_STAMP_SIZE] = {0};
+static uint8_t offlineTimeValueOut[OFFLINE_TIME_STAMP_SIZE] = {0};
 
 // gatt chars
 ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_1(distanceCharUUID_1, &readValue,
@@ -50,10 +54,10 @@ ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_1(dista
 ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineDoubleValue)> distanceChar_2(distanceCharUUID_2, offlineDoubleValue,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_1(pirCharUUID_1, &readValue,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineTimeValueIn)> pirChar_1(pirCharUUID_1, offlineTimeValueIn,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> pirChar_2(pirCharUUID_2, &readValue,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineTimeValueOut)> pirChar_2(pirCharUUID_2, offlineTimeValueOut,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
 
 /* Set up custom service */
@@ -192,39 +196,28 @@ int main()
         memcpy(&readValue, &distance_in_or_out, sizeof(distance_in_or_out));
         ble.updateCharacteristicValue(distanceChar_1.getValueHandle(), &readValue, sizeof(readValue));
 
+// offline counter and timestamps recorded here. max length = OFFLINE_TIME_STAMP_SIZE/2
         if(!bluetooth_connected) {
-            if(distance_in_or_out==0x01)
+            if(distance_in_or_out==0x01) {
+                memcpy(&offlineTimeValueIn[offlineDoubleValue[0]*2%(OFFLINE_TIME_STAMP_SIZE)], &seconds, sizeof(seconds));
+                printf("Offline In time recorded!\r\n");
                 offlineDoubleValue[0]++;
-            else if(distance_in_or_out==0x02)
+            } else if(distance_in_or_out==0x02) {
+                memcpy(&offlineTimeValueOut[offlineDoubleValue[1]*2%(OFFLINE_TIME_STAMP_SIZE)], &seconds, sizeof(seconds));
+                printf("Offline OUT time recorded!\r\n");
                 offlineDoubleValue[1]++;
+            }
         }
         memcpy(&offlineDoubleValue[2], &seconds, sizeof(seconds));
-        printf("Offline? ---%d --- Offline in and out: %d,%d \r\n", bluetooth_connected,offlineDoubleValue[0], offlineDoubleValue[1]);
-        ble.updateCharacteristicValue(distanceChar_2.getValueHandle(), offlineDoubleValue, sizeof(readValue)*4);
-        
-        ble.updateCharacteristicValue(pirChar_1.getValueHandle(), &readValue, sizeof(readValue));
-        ble.updateCharacteristicValue(pirChar_2.getValueHandle(), &readValue, sizeof(readValue));
-//
-//        printf("PIRs:");
-//        //set pir value
-//        if (pir_1 == 0x00) {
-//            printf("  off\t");
-//            pir_on = 0;
-//        } else {
-//            printf("  on\t");
-//            pir_on = 1;
-//        }
-//        memcpy(&readValue, &pir_on, sizeof(pir_on));
-//
-//        //set pir value
-//        if (pir_2 == 0x00) {
-//            printf(" off!\r\n");
-//            pir_on = 0;
-//        } else {
-//            printf(" on!\r\n");
-//            pir_on = 1;
-//        }
-//        memcpy(&readValue, &pir_on, sizeof(pir_on));
+        if(!bluetooth_connected) {
+            printf("Bluetooth---NOT---connected!\r\n");
+            printf("Offline in and out: %d,%d \r\n",offlineDoubleValue[0], offlineDoubleValue[1]);
+        } else {
+            printf("Bluetooth Connected!\r\n");
+        }
+        ble.updateCharacteristicValue(distanceChar_2.getValueHandle(), offlineDoubleValue, sizeof(offlineDoubleValue));
+        ble.updateCharacteristicValue(pirChar_1.getValueHandle(), offlineTimeValueIn, sizeof(offlineTimeValueIn));
+        ble.updateCharacteristicValue(pirChar_2.getValueHandle(), offlineTimeValueOut, sizeof(offlineTimeValueOut));
         loop_counter++;
         seconds = (loop_counter*2)/5;
         printf("While loop %d ends! System temp timer %d seconds!\r\n\n", loop_counter, seconds);

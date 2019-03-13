@@ -56,14 +56,14 @@ public class BlinkyManager extends BleManager<BlinkyManagerCallbacks> {
     private final BlinkyPir1DataCallback mPir1CallBack = new BlinkyPir1DataCallback() {
 
         @Override
-        public void onPir1StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
+        public void onPir1StateChanged(@NonNull BluetoothDevice device, String pressed) {
             mCallbacks.onPir1StateChanged(device, pressed);
         }
     };
     private final BlinkyPir2DataCallback mPir2CallBack = new BlinkyPir2DataCallback() {
 
         @Override
-        public void onPir2StateChanged(@NonNull BluetoothDevice device, boolean pressed) {
+        public void onPir2StateChanged(@NonNull BluetoothDevice device, String pressed) {
             mCallbacks.onPir2StateChanged(device, pressed);
         }
     };

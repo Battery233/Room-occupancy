@@ -32,13 +32,12 @@ import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.preference.PreferenceManager;
 
-import io.github.battery233.roomOccupancy.ScannerActivity;
-import io.github.battery233.roomOccupancy.utils.Utils;
-
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import io.github.battery233.roomOccupancy.ScannerActivity;
+import io.github.battery233.roomOccupancy.utils.Utils;
 import no.nordicsemi.android.support.v18.scanner.BluetoothLeScannerCompat;
 import no.nordicsemi.android.support.v18.scanner.ScanCallback;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
@@ -58,14 +57,76 @@ public class ScannerViewModel extends AndroidViewModel {
     private final ScannerStateLiveData mScannerStateLiveData;
 
     private final SharedPreferences mPreferences;
+    private final ScanCallback scanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(final int callbackType, @NonNull final ScanResult result) {
+            // This callback will be called only if the scan report delay is not set or is set to 0.
 
-    public DevicesLiveData getDevices() {
-        return mDevicesLiveData;
-    }
+            // If the packet has been obtained while Location was disabled, mark Location as not required
+            if (Utils.isLocationRequired(getApplication()) && !Utils.isLocationEnabled(getApplication()))
+                Utils.markLocationNotRequired(getApplication());
 
-    public ScannerStateLiveData getScannerState() {
-        return mScannerStateLiveData;
-    }
+            if (mDevicesLiveData.deviceDiscovered(result)) {
+                mDevicesLiveData.applyFilter();
+                mScannerStateLiveData.recordFound();
+            }
+        }
+
+        @Override
+        public void onBatchScanResults(@NonNull final List<ScanResult> results) {
+            // This callback will be called only if the report delay set above is greater then 0.
+
+            // If the packet has been obtained while Location was disabled, mark Location as not required
+            if (Utils.isLocationRequired(getApplication()) && !Utils.isLocationEnabled(getApplication()))
+                Utils.markLocationNotRequired(getApplication());
+
+            boolean atLeastOneMatchedFilter = false;
+            for (final ScanResult result : results)
+                atLeastOneMatchedFilter = mDevicesLiveData.deviceDiscovered(result) || atLeastOneMatchedFilter;
+            if (atLeastOneMatchedFilter) {
+                mDevicesLiveData.applyFilter();
+                mScannerStateLiveData.recordFound();
+            }
+        }
+
+        @Override
+        public void onScanFailed(final int errorCode) {
+            mScannerStateLiveData.scanningStopped();
+        }
+    };
+    /**
+     * Broadcast receiver to monitor the changes in the location provider.
+     */
+    private final BroadcastReceiver mLocationProviderChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final boolean enabled = Utils.isLocationEnabled(context);
+            mScannerStateLiveData.setLocationEnabled(enabled);
+        }
+    };
+    /**
+     * Broadcast receiver to monitor the changes in the bluetooth adapter.
+     */
+    private final BroadcastReceiver mBluetoothStateBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF);
+            final int previousState = intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, BluetoothAdapter.STATE_OFF);
+
+            switch (state) {
+                case BluetoothAdapter.STATE_ON:
+                    mScannerStateLiveData.bluetoothEnabled();
+                    break;
+                case BluetoothAdapter.STATE_TURNING_OFF:
+                case BluetoothAdapter.STATE_OFF:
+                    if (previousState != BluetoothAdapter.STATE_TURNING_OFF && previousState != BluetoothAdapter.STATE_OFF) {
+                        stopScan();
+                        mScannerStateLiveData.bluetoothDisabled();
+                    }
+                    break;
+            }
+        }
+    };
 
     public ScannerViewModel(final Application application) {
         super(application);
@@ -78,6 +139,14 @@ public class ScannerViewModel extends AndroidViewModel {
                 Utils.isLocationEnabled(application));
         mDevicesLiveData = new DevicesLiveData(filterUuidRequired, filerNearbyOnly);
         registerBroadcastReceivers(application);
+    }
+
+    public DevicesLiveData getDevices() {
+        return mDevicesLiveData;
+    }
+
+    public ScannerStateLiveData getScannerState() {
+        return mScannerStateLiveData;
     }
 
     @Override
@@ -167,45 +236,6 @@ public class ScannerViewModel extends AndroidViewModel {
         mScannerStateLiveData.scanningStopped();
     }
 
-    private final ScanCallback scanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(final int callbackType, @NonNull final ScanResult result) {
-            // This callback will be called only if the scan report delay is not set or is set to 0.
-
-            // If the packet has been obtained while Location was disabled, mark Location as not required
-            if (Utils.isLocationRequired(getApplication()) && !Utils.isLocationEnabled(getApplication()))
-                Utils.markLocationNotRequired(getApplication());
-
-            if (mDevicesLiveData.deviceDiscovered(result)) {
-                mDevicesLiveData.applyFilter();
-                mScannerStateLiveData.recordFound();
-            }
-        }
-
-        @Override
-        public void onBatchScanResults(@NonNull final List<ScanResult> results) {
-            // This callback will be called only if the report delay set above is greater then 0.
-
-            // If the packet has been obtained while Location was disabled, mark Location as not required
-            if (Utils.isLocationRequired(getApplication()) && !Utils.isLocationEnabled(getApplication()))
-                Utils.markLocationNotRequired(getApplication());
-
-            boolean atLeastOneMatchedFilter = false;
-            for (final ScanResult result : results)
-                atLeastOneMatchedFilter = mDevicesLiveData.deviceDiscovered(result) || atLeastOneMatchedFilter;
-            if (atLeastOneMatchedFilter) {
-                mDevicesLiveData.applyFilter();
-                mScannerStateLiveData.recordFound();
-            }
-        }
-
-        @Override
-        public void onScanFailed(final int errorCode) {
-            // TODO This should be handled
-            mScannerStateLiveData.scanningStopped();
-        }
-    };
-
     /**
      * Register for required broadcast receivers.
      */
@@ -215,39 +245,4 @@ public class ScannerViewModel extends AndroidViewModel {
             application.registerReceiver(mLocationProviderChangedReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
         }
     }
-
-    /**
-     * Broadcast receiver to monitor the changes in the location provider.
-     */
-    private final BroadcastReceiver mLocationProviderChangedReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            final boolean enabled = Utils.isLocationEnabled(context);
-            mScannerStateLiveData.setLocationEnabled(enabled);
-        }
-    };
-
-    /**
-     * Broadcast receiver to monitor the changes in the bluetooth adapter.
-     */
-    private final BroadcastReceiver mBluetoothStateBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF);
-            final int previousState = intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_STATE, BluetoothAdapter.STATE_OFF);
-
-            switch (state) {
-                case BluetoothAdapter.STATE_ON:
-                    mScannerStateLiveData.bluetoothEnabled();
-                    break;
-                case BluetoothAdapter.STATE_TURNING_OFF:
-                case BluetoothAdapter.STATE_OFF:
-                    if (previousState != BluetoothAdapter.STATE_TURNING_OFF && previousState != BluetoothAdapter.STATE_OFF) {
-                        stopScan();
-                        mScannerStateLiveData.bluetoothDisabled();
-                    }
-                    break;
-            }
-        }
-    };
 }
