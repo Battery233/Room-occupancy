@@ -36,7 +36,7 @@ public class SplashScreenActivity extends Activity {
                         Toast.makeText(SplashScreenActivity.this, "Send login record fail!", Toast.LENGTH_SHORT).show());
         data.document("Login history").set(loginTime, SetOptions.merge());
         new Handler().postDelayed(() -> {
-            final Intent intent = new Intent(this, ScannerActivity.class);
+            final Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             startActivity(intent);
             finish();

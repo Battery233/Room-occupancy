@@ -47,6 +47,8 @@ dependencies {
     // Butter Knife
     implementation 'com.jakewharton:butterknife:10.0.0'
     implementation 'com.google.firebase:firebase-firestore:18.1.0'
+    implementation 'androidx.annotation:annotation:1.0.0-beta01'
+    implementation 'com.google.firebase:firebase-auth:16.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.0.0'
     // Brings the new BluetoothLeScanner API to older platforms
     implementation 'no.nordicsemi.android.support.v18:scanner:1.4.0'

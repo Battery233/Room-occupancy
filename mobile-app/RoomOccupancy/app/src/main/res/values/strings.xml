@@ -1,59 +1,72 @@
 <resources>
-	<string name="app_name">Room occupancy</string>
-	<string name="feature_name">IoTSSC</string>
+    <string name="app_name">Room occupancy</string>
+    <string name="feature_name">IoTSSC</string>
 
-	<string name="title">@string/app_name</string>
+    <string name="title">@string/app_name</string>
 
-	<string name="menu_filter">Filter</string>
-	<string name="menu_filter_uuid">Devices with valid UUID</string>
-	<string name="menu_filter_nearby">Only nearby devices</string>
+    <string name="menu_filter">Filter</string>
+    <string name="menu_filter_uuid">Devices with valid UUID</string>
+    <string name="menu_filter_nearby">Only nearby devices</string>
 
-	<string name="unknown_device">N/A</string>
-	<string name="turn_on">On</string>
-	<string name="turn_off">Off</string>
-	<string name="title_led_state">LED</string>
-	<string name="title_button_state">Button</string>
-	<string name="state">State</string>
-	<string name="button_pressed">PRESSED</string>
-	<string name="button_released">RELEASED</string>
-	<string name="button_unknown">UNKNOWN</string>
-	<string name="led_summary">This string is no longer useful</string>
-	<string name="button_summary">This string is no longer useful</string>
+    <string name="unknown_device">N/A</string>
+    <string name="turn_on">On</string>
+    <string name="turn_off">Off</string>
+    <string name="title_led_state">LED</string>
+    <string name="title_button_state">Button</string>
+    <string name="state">State</string>
+    <string name="button_pressed">PRESSED</string>
+    <string name="button_released">RELEASED</string>
+    <string name="button_unknown">UNKNOWN</string>
+    <string name="led_summary">This string is no longer useful</string>
+    <string name="button_summary">This string is no longer useful</string>
 
-	<string name="location_permission_title">LOCATION PERMISSION REQUIRED</string>
-	<string name="location_permission_info">From Android 6.0 Marshmallow onwards the application requires Location permission in order to scan for Bluetooth Low Energy devices.
+    <string name="location_permission_title">LOCATION PERMISSION REQUIRED</string>
+    <string name="location_permission_info">From Android 6.0 Marshmallow onwards the application requires Location permission in order to scan for Bluetooth Low Energy devices.
       \n\nThis is because Bluetooth LE beacons, for example iBeacons or Eddystone, may be used to determine the phone\'s and user\'s location. <b>nRF Blinky</b> will not use this information in any way.</string>
-	<string name="location_permission_action">Grant permission</string>
-	<string name="location_permission_settings">Settings</string>
+    <string name="location_permission_action">Grant permission</string>
+    <string name="location_permission_settings">Settings</string>
 
-	<string name="bluetooth_disabled_title">BLUETOOTH DISABLED</string>
-	<string name="bluetooth_disabled_info">The Bluetooth adapter is turned off. Click the button below to enable it.</string>
-	<string name="bluetooth_disabled_action">Enable</string>
+    <string name="bluetooth_disabled_title">BLUETOOTH DISABLED</string>
+    <string name="bluetooth_disabled_info">The Bluetooth adapter is turned off. Click the button below to enable it.</string>
+    <string name="bluetooth_disabled_action">Enable</string>
 
-	<string name="blinky_guide_title">CAN\'T SEE YOUR Device?</string>
-	<string name="blinky_guide_info">Please turn on the correct board</string>
-	<string name="blinky_guide_location_info">3. Location is turned off. Some Android phones require it enabled in order to scan for Bluetooth LE devices.
+    <string name="blinky_guide_title">CAN\'T SEE YOUR Device?</string>
+    <string name="blinky_guide_info">Please turn on the correct board</string>
+    <string name="blinky_guide_location_info">3. Location is turned off. Some Android phones require it enabled in order to scan for Bluetooth LE devices.
 		If you are sure your Blinky is advertising and it doesn\'t show up here, click the button below to enable Location.</string>
-	<string name="blinky_guide_location_action">Enable</string>
+    <string name="blinky_guide_location_action">Enable</string>
 
-	<string name="not_supported_title">DEVICE NOT SUPPORTED</string>
-	<string name="not_supported_info">Oops! Wrong device!</string>
-	<string name="not_supported_action">Fix and try again</string>
+    <string name="not_supported_title">DEVICE NOT SUPPORTED</string>
+    <string name="not_supported_info">Oops! Wrong device!</string>
+    <string name="not_supported_action">Fix and try again</string>
 
-	<string name="state_scanning">Scanning…</string>
-	<string name="state_connecting">Connecting…</string>
-	<string name="state_discovering_services">Discovering services…</string>
-	<string name="state_initializing">Initializing…</string>
-	<string name="state_disconnected">Device disconnected.</string>
+    <string name="state_scanning">Scanning…</string>
+    <string name="state_connecting">Connecting…</string>
+    <string name="state_discovering_services">Discovering services…</string>
+    <string name="state_initializing">Initializing…</string>
+    <string name="state_disconnected">Device disconnected.</string>
 
-	<string name="Distance_sensor_1">People walked in</string>
-	<string name="Distance_sensor_2">People walked out</string>
-	<string name="PIR_sensor_1">Offline data</string>
-	<string name="PIR_sensor_2">PIR sensor 2</string>
-	<string name="TOF_triggered">TOF triggered</string>
-	<string name="TOF_ready">TOF ready</string>
+    <string name="Distance_sensor_1">People walked in</string>
+    <string name="Distance_sensor_2">People walked out</string>
+    <string name="PIR_sensor_1">Offline data</string>
+    <string name="PIR_sensor_2">PIR sensor 2</string>
+    <string name="TOF_triggered">TOF triggered</string>
+    <string name="TOF_ready">TOF ready</string>
     <string name="pir_triggered">PIR triggered</string>
     <string name="pir_ready">PIR ready</string>
-	<string name="contentDescription">not given</string>
-	<string name="sinceLastTime">Since the app started …</string>
+    <string name="contentDescription">not given</string>
+    <string name="sinceLastTime">Since the app started …</string>
+    <string name="title_activity_login">Sign in</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
 </resources>

@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     TextView getHighestRssi;
     @BindView(R.id.button_card_4)
     View buttonCard4;
-    private FirebaseFirestore db;
     private BlinkyViewModel mViewModel;
     private int status;
     private String payloadString;
@@ -79,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         mViewModel = ViewModelProviders.of(this).get(BlinkyViewModel.class);
         mViewModel.connect(device);
 
-        db = FirebaseFirestore.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         CollectionReference data = db.collection("Raw Data");
 
         // Set up views
