@@ -281,7 +281,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                             CollectionReference data = db.collection("Account login information");
                             HashMap<String, String> loginInformation = new HashMap<>();
                             String loginTime = new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(new Date());
-                            loginInformation.put(loginTime,user.getEmail());
+                            loginInformation.put(loginTime, user.getEmail());
                             data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(new Date())).set(loginInformation, SetOptions.merge())
                                     .addOnSuccessListener(documentReference ->
                                             Toast.makeText(LoginActivity.this, "Welcome! " + user.getEmail() + "\nSend login record success!", Toast.LENGTH_LONG).show());
@@ -297,8 +297,8 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                                     CollectionReference data = db.collection("Account login information");
                                     HashMap<String, String> loginInformation = new HashMap<>();
                                     String loginTime = new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(new Date());
-                                    loginInformation.put(loginTime,user.getEmail());
-                                    data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(new Date())).set(loginInformation,SetOptions.merge())
+                                    loginInformation.put(loginTime, user.getEmail());
+                                    data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(new Date())).set(loginInformation, SetOptions.merge())
                                             .addOnSuccessListener(documentReference ->
                                                     Toast.makeText(LoginActivity.this, "Welcome back! " + user.getEmail() + "\nSend login record success!", Toast.LENGTH_LONG).show());
 

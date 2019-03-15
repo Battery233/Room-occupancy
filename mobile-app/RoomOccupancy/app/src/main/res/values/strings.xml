@@ -57,6 +57,8 @@
     <string name="contentDescription">not given</string>
     <string name="sinceLastTime">Since the app started …</string>
     <string name="title_activity_login">Sign in</string>
+    <string name="version_number">Version 1.0</string>
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
