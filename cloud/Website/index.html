@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+ 
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+    <script src="https://www.gstatic.com/firebasejs/5.8.4/firebase-app.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/5.8.4/firebase-firestore.js"></script>
+     <script src="https://www.gstatic.com/firebasejs/5.5.3/firebase.js"></script>
+    <link href="assets/vendor/fonts/circular-std/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/libs/css/style.css">
+    <link rel="stylesheet" href="assets/vendor/fonts/fontawesome/css/fontawesome-all.css">
+    <link rel="stylesheet" href="assets/vendor/charts/chartist-bundle/chartist.css">
+    <link rel="stylesheet" href="assets/vendor/fonts/material-design-iconic-font/css/materialdesignicons.min.css">
+    
+    <title>IOT Room Occupancy</title>
+</head>
+
+<body>
+    <!-- ============================================================== -->
+    <!-- main wrapper -->
+    <!-- ============================================================== -->
+    <div class="dashboard-main-wrapper">
+        <!-- ============================================================== -->
+        <!-- navbar -->
+        <!-- ============================================================== -->
+        <div class="dashboard-header">
+            <nav class="navbar navbar-expand-lg bg-white fixed-top">
+                <a class="navbar-brand" href="Week-Occupancy-Times.html">IOTSSC Room Occupancy</a>
+                <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                </div>
+            </nav>
+        </div>
+        <div class="nav-left-sidebar sidebar-dark">
+            <div class="menu-list">
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <a class="d-xl-none d-lg-none" href="#">Dashboard</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav flex-column">
+                            <li class="nav-divider">
+                                Menu
+                            </li>
+                            <li class="nav-item ">
+                                <a class="nav-link active" href="#" aria-expanded="false" data-target="#submenu-1" aria-controls="submenu-1"><i class="fa fa-fw fa-user-circle"></i>Today's Summary <span class="badge badge-success">6</span></a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-3" aria-controls="submenu-3"></i>Occupancy Data by the Hour</a>
+                                <div id="submenu-3" class="collapse submenu" style="">
+                                    <ul class="nav flex-column">
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="Today-Occupancy-Page.html">Today</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="Week-Occupancy-Page.html">Past 7 Days</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>                                            
+                  </div>
+                </nav>
+            </div>
+        </div>
+        <div class="dashboard-wrapper">
+            <div class="dashboard-ecommerce">
+                <div class="container-fluid dashboard-content ">
+
+                    <!-- ============================================================== -->
+                    <!-- pageheader  -->
+                    <!-- ============================================================== -->
+                   
+                    <!-- ============================================================== -->
+                    <!-- end pageheader  -->
+                    <!-- ============================================================== -->
+                    <div class="ecommerce-widget">
+
+                        <div class="row">
+                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card border-3 border-top border-top-primary">
+                                    <div class="card-body">
+                                        <h5 class="text-muted">Current Occupation</h5>
+                                        <div class="metric-value d-inline-block">
+                                            <p id="current" class="display-1 font-weight-bolder"></p>
+                                            <div id="current"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card border-3 border-top border-top-primary">
+                                    <div class="card-body">
+                                        <h5 class="text-muted">Total Entrants (Only Today)</h5>
+                                        <div class="metric-value d-inline-block">
+                                            <p id="entries" class="display-1 font-weight-bolder"></p>
+                                            <div id="entries"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card border-3 border-top border-top-primary">
+                                    <div class="card-body">
+                                        <h5 class="text-muted">Total Exits(Only Today)</h5>
+                                        <div class="metric-value d-inline-block">
+                                            <p id="exits" class="display-1 font-weight-bolder"></p>
+                                            <div id="exits"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                          
+                        </div>
+                        <div class="row">
+                            <!-- ============================================================== -->
+              				                        <!-- product category  -->
+                            <!-- ============================================================== -->
+                            <div class="col-xl-5 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card">
+                                    <h5 class="card-header">Today's Popular Room Times</h5>
+                                    <div class="card-body">
+                                        <div class="ct-chart-invoice ct-golden-section"></div>
+                                        <div class="text-center m-t-40">
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-primary mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">12am to 6am</span>
+                                            </span>
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-secondary mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">6am to 12pm</span>
+                                            </span>
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-warning mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">12pm to 6pm</span>
+                                            </span>
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-info mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">6pm to 12am</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-5 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card">
+                                    <h5 class="card-header">This Week's Popular Room Times</h5>
+                                    <div class="card-body">
+                                        <div class="ct-chart-invoice1 ct-golden-section"></div>
+                                        <div class="text-center m-t-40">
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-primary mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">12am to 6am</span>
+                                            </span>
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-secondary mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">6am to 12pm</span>
+                                            </span>
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-warning mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">12pm to 6pm</span>
+                                            </span>
+                                            <span class="legend-item mr-3">
+                                                        <span class="fa-xs text-info mr-1 legend-tile"><i class="fa fa-fw fa-square-full "></i></span><span class="legend-text">6pm to 12am</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card border-3 border-top border-top-primary">
+                                    <div class="card-body">
+                                        <h5 class="text-muted">Total Lifetime Entrants</h5>
+                                        <div class="metric-value d-inline-block">
+                                            <p id="totalIn" class="display-1 font-weight-bolder"></p>
+                                            <div id="totalIn"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="card border-3 border-top border-top-primary">
+                                    <div class="card-body">
+                                        <h5 class="text-muted">Total Lifetime Exits</h5>
+                                        <div class="metric-value d-inline-block">
+                                            <p id="totalOut" class="display-1 font-weight-bolder"></p>
+                                            <div id="totalOut"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- ============================================================== -->
+                            <!-- end product category  -->
+                                   <!-- product sales  -->
+                            <!-- ============================================================== -->
+                            
+                            <!-- ============================================================== -->
+                            <!-- sales  -->
+                            <!-- ============================================================== -->
+                            
+                            <!-- ============================================================== -->
+                            <!-- end total orders  -->
+                            <!-- ============================================================== -->
+                    </div>
+                </div>
+            </div>
+            <!-- ============================================================== -->
+            <!-- footer -->
+            <!-- ============================================================== -->
+            <div class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
+                        </div>
+                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
+                            <div class="text-md-right footer-links d-none d-sm-block">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ============================================================== -->
+            <!-- end footer -->
+            <!-- ============================================================== -->
+        </div>
+        <!-- ============================================================== -->
+        <!-- end wrapper  -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- end main wrapper  -->
+    <!-- ============================================================== -->
+    <!-- Optional JavaScript -->
+    <!-- jquery 3.3.1 -->
+    <script src="assets/vendor/jquery/jquery-3.3.1.min.js"></script>
+    <!-- bootstap bundle js -->
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.js"></script>
+    <!-- slimscroll js -->
+    <script src="assets/vendor/slimscroll/jquery.slimscroll.js"></script>
+    <!-- main js -->
+    <!-- chart chartist js -->
+    <script src="assets/vendor/charts/chartist-bundle/chartist.min.js"></script>
+    <script src="assets/libs/js/dashboard-ecommerce.js"></script>
+</body>
+ 
+</html>
