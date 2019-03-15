@@ -13,7 +13,7 @@ DigitalIn pir_2(p15, PullNone);
 
 // define distance range
 #define DISTANCE_MIN 10
-#define DISTANCE_MAX 500
+#define DISTANCE_MAX 1000
 
 #define OFFLINE_TIME_STAMP_SIZE 32 // 2 for each timestamp
 
@@ -144,8 +144,8 @@ int main()
     while (1) {
         led = !led;
 
-        tof_sensor_1.get_distance(&distance1);
         tof_sensor_2.get_distance(&distance2);
+        tof_sensor_1.get_distance(&distance1);
         printf("Distance: %d, %d\r\n", distance1, distance2);
 
         distance_in_or_out = 0;

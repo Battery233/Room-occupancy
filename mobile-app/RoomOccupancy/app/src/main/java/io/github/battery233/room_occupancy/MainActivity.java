@@ -31,7 +31,7 @@ import io.github.battery233.room_occupancy.viewmodels.BlinkyViewModel;
 @SuppressWarnings("ConstantConditions")
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
-    public static final int MAX_OFFLINE_DATA_LENGTH = 16;
+    public static final int MAX_OFFLINE_DATA_LENGTH = 10;
     @BindView(R.id.tof_state_1)
     TextView tofState_1;
     @BindView(R.id.tof_state_2)
@@ -137,11 +137,14 @@ public class MainActivity extends AppCompatActivity {
         mViewModel.getDistance2State().observe(this,
                 triggered -> {
                     if (offlineDataNumberNotRecorded) {
-                        offlineInData = 10 * (triggered.charAt(5) - 48) + triggered.charAt(6) - 48;
-                        offlineOutData = 10 * (triggered.charAt(8) - 48) + triggered.charAt(9) - 48;
+                        char[] c = {triggered.charAt(5), triggered.charAt(6)};
+                        offlineInData = Integer.parseInt(new String(c), 16);
+                        c[0] = triggered.charAt(8);
+                        c[1] = triggered.charAt(9);
+                        offlineOutData = Integer.parseInt(new String(c), 16);
                         if (offlineInData != 0 || offlineOutData != 0) {
                             boardOnlineTime = getValueFromHexString(triggered, 1);
-                            Toast.makeText(MainActivity.this, "Offline data found! in: " + offlineInData + " out: " + offlineOutData + " Board timer = " + boardOnlineTime, Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "Offline data found! in: " + offlineInData + " out: " + offlineOutData + " Board timer = " + boardOnlineTime, Toast.LENGTH_SHORT).show();
                             offlineDataNumberNotRecorded = false;
                         }
                     }

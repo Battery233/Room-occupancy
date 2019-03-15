@@ -7,8 +7,7 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 
 /**
- * This is the entrance activity. The activity will least for 3 seconds
- * In this activity, files will be download and login status will be checked
+ * This is the entrance splash activity. The activity will least for 1.2 seconds
  */
 
 class SplashActivity : AppCompatActivity() {
