@@ -14,26 +14,29 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 
@@ -60,6 +63,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private FirebaseUser user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,7 +179,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 4;
+        return password.length() > 5;
     }
 
     /**
@@ -232,13 +236,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             emails.add(cursor.getString(ProfileQuery.ADDRESS));
             cursor.moveToNext();
         }
-
         addEmailsToAutoComplete(emails);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-
     }
 
     private void addEmailsToAutoComplete(List<String> emailAddressCollection) {
@@ -246,7 +248,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(LoginActivity.this,
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
-
         mEmailView.setAdapter(adapter);
     }
 
@@ -256,9 +257,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                 ContactsContract.CommonDataKinds.Email.ADDRESS,
                 ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
         };
-
         int ADDRESS = 0;
-        int IS_PRIMARY = 1;
     }
 
     /**
@@ -267,30 +266,55 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mEmail;
-        private final String mPassword;
-
         UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-
-// Initialize Firebase Auth
+            // Initialize Firebase Auth
             mAuth = FirebaseAuth.getInstance();
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(LoginActivity.this, task -> {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            Log.d(TAG, "createUserWithEmail success");
+                            user = mAuth.getCurrentUser();
+                            //upload to fire store: login timestamp
+                            FirebaseFirestore db;
+                            db = FirebaseFirestore.getInstance();
+                            CollectionReference data = db.collection("Account login information");
+                            HashMap<String, String> loginInformation = new HashMap<>();
+                            String loginTime = new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(new Date());
+                            loginInformation.put(loginTime,user.getEmail());
+                            data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(new Date())).set(loginInformation, SetOptions.merge())
+                                    .addOnSuccessListener(documentReference ->
+                                            Toast.makeText(LoginActivity.this, "Welcome! " + user.getEmail() + "\nSend login record success!", Toast.LENGTH_LONG).show());
+
                             final Intent intent = new Intent(LoginActivity.this, ScannerActivity.class);
                             startActivity(intent);
                         } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            mPasswordView.setError(getString(R.string.error_incorrect_password));
-                            mPasswordView.requestFocus();
+                            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(LoginActivity.this, action -> {
+                                if (action.isSuccessful()) {
+                                    user = mAuth.getCurrentUser();
+                                    FirebaseFirestore db;
+                                    db = FirebaseFirestore.getInstance();
+                                    CollectionReference data = db.collection("Account login information");
+                                    HashMap<String, String> loginInformation = new HashMap<>();
+                                    String loginTime = new SimpleDateFormat("yyyyMMddHHmmss", Locale.UK).format(new Date());
+                                    loginInformation.put(loginTime,user.getEmail());
+                                    data.document(new SimpleDateFormat("yyyyMMdd", Locale.UK).format(new Date())).set(loginInformation,SetOptions.merge())
+                                            .addOnSuccessListener(documentReference ->
+                                                    Toast.makeText(LoginActivity.this, "Welcome back! " + user.getEmail() + "\nSend login record success!", Toast.LENGTH_LONG).show());
+
+                                    final Intent intent = new Intent(LoginActivity.this, ScannerActivity.class);
+                                    startActivity(intent);
+                                } else {
+                                    // If sign in fails, display a message to the user.
+                                    Log.w(TAG, "Login:failure", task.getException());
+                                    Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                            Toast.LENGTH_SHORT).show();
+                                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+                                    mPasswordView.requestFocus();
+                                    Intent intent = getIntent();
+                                    startActivity(intent);
+                                }
+                            });
                         }
                     });
         }
