@@ -3,19 +3,20 @@
 #include "VL53L0X.h"
 
 Serial pc(USBTX, USBRX);
-DigitalOut led(LED1);
+DigitalOut led1(LED1);
+DigitalOut led2(LED2);
+DigitalOut led3(LED3);
+DigitalOut led4(LED4);
 
 // two pir sensors
 #define PIR_PIN_1 p14
 DigitalIn pir_1(p14, PullNone);
-#define PIR_PIN_2 p15
-DigitalIn pir_2(p15, PullNone);
 
 // define distance range
 #define DISTANCE_MIN 10
 #define DISTANCE_MAX 1000
 
-#define OFFLINE_TIME_STAMP_SIZE 32 // 2 for each timestamp
+#define OFFLINE_TIME_STAMP_SIZE 20 // 2 for each timestamp
 
 //distance sensors
 #define tof_address_1 (0x29)
@@ -142,7 +143,7 @@ int main()
     printf("\n\r********* Device ready!*********\n\r");
 
     while (1) {
-        led = !led;
+        led1 = !led1;
 
         tof_sensor_2.get_distance(&distance2);
         tof_sensor_1.get_distance(&distance1);
@@ -152,6 +153,9 @@ int main()
         //        get string and send via bluetooth
         distance_boolean_1 = distance1 > DISTANCE_MIN && distance1 < DISTANCE_MAX ? 1 : 0;
         distance_boolean_2 = distance2 > DISTANCE_MIN && distance2 < DISTANCE_MAX ? 1 : 0;
+        led2 = pir_1==0x00? 1:0;
+        led3 = distance_boolean_1? 0 : 1;
+        led4 = distance_boolean_2? 0 : 1;
 
         //is people go in or out
         //0 nothing, 1 in, 2 out
