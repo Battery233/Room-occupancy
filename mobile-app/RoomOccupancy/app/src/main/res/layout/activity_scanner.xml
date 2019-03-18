@@ -21,6 +21,13 @@
 			android:background="?attr/colorPrimary"
 			app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
+		<Button
+			android:id="@+id/dash_button"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:backgroundTint="@color/nordicBlueslate"
+			android:text="Go to dashboard" />
+
 		<ProgressBar
 			android:id="@+id/state_scanning"
 			style="?android:attr/progressBarStyleHorizontal"

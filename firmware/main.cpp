@@ -22,7 +22,7 @@ DigitalIn pir_1(p14, PullNone);
 #define tof_address_1 (0x29)
 #define tof_address_2 (0x30)
 #define tof_sensor_1_SHUT p16
-#define tof_sensor_2_SHUT p17
+#define tof_sensor_2_SHUT p18
 #define I2C_SCL p7
 #define I2C_SDA p30
 static DevI2C devI2c(I2C_SDA, I2C_SCL);
@@ -148,9 +148,9 @@ int main()
         if(pir_1 == 0x00 && !bluetooth_connected && power_saving && offlineDoubleValue[0]==offlineDoubleValue[1]) {
             continue;
         }
-        tof_sensor_2.get_distance(&distance2);
         tof_sensor_1.get_distance(&distance1);
-        printf("Distance: %d, %d\r\n", distance1, distance2);
+        tof_sensor_2.get_distance(&distance2);
+//        printf("Distance: %d, %d\r\n", distance1, distance2);
 
         distance_in_or_out = 0;
         //        get string and send via bluetooth
@@ -198,7 +198,7 @@ int main()
             both_triggered = false;
             logged = false;
         }
-        printf("in and out status: %d \r\n", distance_in_or_out);
+//        printf("in and out status: %d \r\n", distance_in_or_out);
         memcpy(&readValue, &distance_in_or_out, sizeof(distance_in_or_out));
         ble.updateCharacteristicValue(distanceChar_1.getValueHandle(), &readValue, sizeof(readValue));
 
@@ -206,27 +206,32 @@ int main()
         if(!bluetooth_connected) {
             if(distance_in_or_out==0x01) {
                 memcpy(&offlineTimeValueIn[offlineDoubleValue[0]*2%(OFFLINE_TIME_STAMP_SIZE)], &seconds, sizeof(seconds));
-                printf("Offline In time recorded!\r\n");
+//                printf("Offline In time recorded!\r\n");
                 offlineDoubleValue[0]++;
             } else if(distance_in_or_out==0x02) {
                 memcpy(&offlineTimeValueOut[offlineDoubleValue[1]*2%(OFFLINE_TIME_STAMP_SIZE)], &seconds, sizeof(seconds));
-                printf("Offline OUT time recorded!\r\n");
+//                printf("Offline OUT time recorded!\r\n");
                 offlineDoubleValue[1]++;
             }
         }
         memcpy(&offlineDoubleValue[2], &seconds, sizeof(seconds));
         if(!bluetooth_connected) {
-            printf("Bluetooth---NOT---connected!\r\n");
-            printf("Offline in and out: %d,%d \r\n",offlineDoubleValue[0], offlineDoubleValue[1]);
+//            printf("Bluetooth---NOT---connected!\r\n");
+//            printf("Offline in and out: %d,%d \r\n",offlineDoubleValue[0], offlineDoubleValue[1]);
         } else {
-            printf("Bluetooth Connected!\r\n");
+//            printf("Bluetooth Connected!\r\n");
+        }
+        if(pir_1==0x00) {
+//            printf("PIR off!\r\n");
+        } else {
+//            printf("PIR on!\r\n");
         }
         ble.updateCharacteristicValue(distanceChar_2.getValueHandle(), offlineDoubleValue, sizeof(offlineDoubleValue));
         ble.updateCharacteristicValue(pirChar_1.getValueHandle(), offlineTimeValueIn, sizeof(offlineTimeValueIn));
         ble.updateCharacteristicValue(pirChar_2.getValueHandle(), offlineTimeValueOut, sizeof(offlineTimeValueOut));
         loop_counter++;
         seconds = (loop_counter*2)/5;
-        printf("While loop %d ends! System temp timer %d seconds!\r\n\n", loop_counter, seconds);
+//        printf("While loop %d ends! System temp timer %d seconds!\r\n\n", loop_counter, seconds);
         //wait
         wait(0.005);
     }

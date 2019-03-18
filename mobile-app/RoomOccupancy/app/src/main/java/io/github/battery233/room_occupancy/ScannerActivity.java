@@ -48,6 +48,8 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     View mNoLocationView;
     @BindView(R.id.bluetooth_off)
     View mNoBluetoothView;
+    @BindView(R.id.dash_button)
+    View dash_button;
     private ScannerViewModel mScannerViewModel;
 
     @Override
@@ -72,6 +74,10 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         final DevicesAdapter adapter = new DevicesAdapter(this, mScannerViewModel.getDevices());
         adapter.setOnItemClickListener(this);
         recyclerView.setAdapter(adapter);
+        dash_button.setOnClickListener(v->{
+            final Intent controlBlinkIntent = new Intent(this, WebActivity.class);
+            startActivity(controlBlinkIntent);
+        });
     }
 
     @Override
