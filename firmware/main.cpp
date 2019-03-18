@@ -137,6 +137,7 @@ int main()
     bool only_left_triggered = false;
     bool only_right_triggered = false;
     bool logged = false;
+    bool power_saving = false;
     uint8_t distance_in_or_out;
     uint32_t loop_counter = 0;
     uint16_t seconds = 0;
@@ -144,7 +145,9 @@ int main()
 
     while (1) {
         led1 = !led1;
-
+        if(pir_1 == 0x00 && !bluetooth_connected && power_saving && offlineDoubleValue[0]==offlineDoubleValue[1]) {
+            continue;
+        }
         tof_sensor_2.get_distance(&distance2);
         tof_sensor_1.get_distance(&distance1);
         printf("Distance: %d, %d\r\n", distance1, distance2);
@@ -156,7 +159,6 @@ int main()
         led2 = pir_1==0x00? 1:0;
         led3 = distance_boolean_1? 0 : 1;
         led4 = distance_boolean_2? 0 : 1;
-
         //is people go in or out
         //0 nothing, 1 in, 2 out
         if(distance_boolean_1 && !distance_boolean_2) {
