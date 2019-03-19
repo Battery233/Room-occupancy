@@ -1,23 +1,18 @@
 #include "mbed.h"
 #include "ble/BLE.h"
 #include "VL53L0X.h"
-
 Serial pc(USBTX, USBRX);
 DigitalOut led1(LED1);
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 DigitalOut led4(LED4);
-
 // two pir sensors
 #define PIR_PIN_1 p14
 DigitalIn pir_1(p14, PullNone);
-
 // define distance range
 #define DISTANCE_MIN 10
 #define DISTANCE_MAX 1000
-
 #define OFFLINE_TIME_STAMP_SIZE 20 // 2 for each timestamp
-
 //distance sensors
 #define tof_address_1 (0x29)
 #define tof_address_2 (0x30)
@@ -25,47 +20,25 @@ DigitalIn pir_1(p14, PullNone);
 #define tof_sensor_2_SHUT p18
 #define I2C_SCL p7
 #define I2C_SDA p30
-static DevI2C devI2c(I2C_SDA, I2C_SCL);
-static DigitalOut shutdown1_pin(tof_sensor_1_SHUT);
-static DigitalOut shutdown2_pin(tof_sensor_2_SHUT);
-static VL53L0X tof_sensor_1(&devI2c, &shutdown1_pin, NC);
-static VL53L0X tof_sensor_2(&devI2c, &shutdown2_pin, NC);
-
-// UUID setup
-uint16_t serviceUUID = 0xAB00;
-uint16_t distanceCharUUID_1 = 0xAB01;
-uint16_t distanceCharUUID_2 = 0xAB02;
-uint16_t pirCharUUID_1 = 0xAB03;
-uint16_t pirCharUUID_2 = 0xAB04;
-
-// device info
-const static char DEVICE_NAME[] = "OMG"; // change this
-static const uint16_t uuid16_list[] = { 0xFFFF }; //Custom UUID, FFFF is reserved for development
+static uint8_t bluetooth_connected;
 
 // payload
 static uint8_t readValue = 0;
 static uint8_t offlineDoubleValue[4] = {0};
 static uint8_t offlineTimeValueIn[OFFLINE_TIME_STAMP_SIZE] = {0};
 static uint8_t offlineTimeValueOut[OFFLINE_TIME_STAMP_SIZE] = {0};
-
 // gatt chars
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_1(distanceCharUUID_1, &readValue,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(readValue)> distanceChar_1(0xAB01, &readValue,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineDoubleValue)> distanceChar_2(distanceCharUUID_2, offlineDoubleValue,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineDoubleValue)> distanceChar_2(0xAB02, offlineDoubleValue,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineTimeValueIn)> pirChar_1(pirCharUUID_1, offlineTimeValueIn,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineTimeValueIn)> pirChar_1(0xAB03, offlineTimeValueIn,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-
-ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineTimeValueOut)> pirChar_2(pirCharUUID_2, offlineTimeValueOut,
+ReadOnlyArrayGattCharacteristic<uint8_t, sizeof(offlineTimeValueOut)> pirChar_2(0xAB04, offlineTimeValueOut,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY);
-
 /* Set up custom service */
 GattCharacteristic* characteristics[] = { &distanceChar_1, &distanceChar_2, &pirChar_1, &pirChar_2 };
-GattService service(serviceUUID, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic*));
-
-static uint8_t bluetooth_connected;
+GattService service(0xAB00, characteristics, sizeof(characteristics) / sizeof(GattCharacteristic*));
 
 void connectionCallback(const Gap::ConnectionCallbackParams_t*)
 {
@@ -97,6 +70,10 @@ void bleInitComplete(BLE::InitializationCompleteCallbackContext* params)
         return;
     }
 
+    // device info
+    const char DEVICE_NAME[] = "OMG"; // change this
+    const uint16_t uuid16_list[] = { 0xFFFF }; //Custom UUID, FFFF is reserved for development
+
     ble.gap().onDisconnection(disconnectionCallback);
     ble.gap().onConnection(connectionCallback);
 
@@ -120,10 +97,16 @@ int main()
     BLE& ble = BLE::Instance(BLE::DEFAULT_INSTANCE);
     ble.init(bleInitComplete);
 
+    //setup distance sensor
+    DevI2C devI2c(I2C_SDA, I2C_SCL);
+    DigitalOut shutdown1_pin(tof_sensor_1_SHUT);
+    DigitalOut shutdown2_pin(tof_sensor_2_SHUT);
+    VL53L0X tof_sensor_1(&devI2c, &shutdown1_pin, NC);
+    VL53L0X tof_sensor_2(&devI2c, &shutdown2_pin, NC);
+
     /* SpinWait for initialization to complete. This is necessary because the
      * BLE object is used in the main loop below. */
-    while (ble.hasInitialized() == false) { /* spin loop */
-    }
+    while (ble.hasInitialized() == false) {}
 
     //init tof sensors
     tof_sensor_1.init_sensor(tof_address_1);
@@ -151,7 +134,6 @@ int main()
         tof_sensor_1.get_distance(&distance1);
         tof_sensor_2.get_distance(&distance2);
 //        printf("Distance: %d, %d\r\n", distance1, distance2);
-
         distance_in_or_out = 0;
         //        get string and send via bluetooth
         distance_boolean_1 = distance1 > DISTANCE_MIN && distance1 < DISTANCE_MAX ? 1 : 0;
@@ -159,8 +141,7 @@ int main()
         led2 = pir_1==0x00? 1:0;
         led3 = distance_boolean_1? 0 : 1;
         led4 = distance_boolean_2? 0 : 1;
-        //is people go in or out
-        //0 nothing, 1 in, 2 out
+        //is people go in or out? 0 nothing, 1 in, 2 out
         if(distance_boolean_1 && !distance_boolean_2) {
             if(both_triggered || only_right_triggered) {
                 if(!logged) {
@@ -215,17 +196,17 @@ int main()
             }
         }
         memcpy(&offlineDoubleValue[2], &seconds, sizeof(seconds));
-        if(!bluetooth_connected) {
+        //if(!bluetooth_connected) {
 //            printf("Bluetooth---NOT---connected!\r\n");
 //            printf("Offline in and out: %d,%d \r\n",offlineDoubleValue[0], offlineDoubleValue[1]);
-        } else {
+//        } else {
 //            printf("Bluetooth Connected!\r\n");
-        }
-        if(pir_1==0x00) {
+//        }
+//        if(pir_1==0x00) {
 //            printf("PIR off!\r\n");
-        } else {
+//        } else {
 //            printf("PIR on!\r\n");
-        }
+//        }
         ble.updateCharacteristicValue(distanceChar_2.getValueHandle(), offlineDoubleValue, sizeof(offlineDoubleValue));
         ble.updateCharacteristicValue(pirChar_1.getValueHandle(), offlineTimeValueIn, sizeof(offlineTimeValueIn));
         ble.updateCharacteristicValue(pirChar_2.getValueHandle(), offlineTimeValueOut, sizeof(offlineTimeValueOut));
