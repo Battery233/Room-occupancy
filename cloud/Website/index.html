@@ -4,6 +4,7 @@
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
+    <meta http-equiv="refresh" content="15" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
@@ -29,7 +30,7 @@
         <!-- ============================================================== -->
         <div class="dashboard-header">
             <nav class="navbar navbar-expand-lg bg-white fixed-top">
-                <a class="navbar-brand" href="Week-Occupancy-Times.html">IOTSSC Room Occupancy</a>
+                <a class="navbar-brand" href="index.html">Room Occupancy</a>
                 <div class="collapse navbar-collapse " id="navbarSupportedContent">
                 </div>
             </nav>
@@ -67,18 +68,10 @@
             </div>
         </div>
         <div class="dashboard-wrapper">
-            <div class="dashboard-ecommerce">
+            <div class="dashboard-occupancy">
                 <div class="container-fluid dashboard-content ">
 
-                    <!-- ============================================================== -->
-                    <!-- pageheader  -->
-                    <!-- ============================================================== -->
-                   
-                    <!-- ============================================================== -->
-                    <!-- end pageheader  -->
-                    <!-- ============================================================== -->
-                    <div class="ecommerce-widget">
-
+                    <div class="main-page">
                         <div class="row">
                             <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
                                 <div class="card border-3 border-top border-top-primary">
@@ -114,15 +107,12 @@
                                 </div>
                             </div>
                         </div>
-                          
+                          <!-- pie chart for today -->
                         </div>
                         <div class="row">
-                            <!-- ============================================================== -->
-              				                        <!-- product category  -->
-                            <!-- ============================================================== -->
                             <div class="col-xl-5 col-lg-6 col-md-6 col-sm-12 col-12">
                                 <div class="card">
-                                    <h5 class="card-header">Today's Popular Room Times</h5>
+                                    <h5 class="card-header">Popular Room Times Today</h5>
                                     <div class="card-body">
                                         <div class="ct-chart-invoice ct-golden-section"></div>
                                         <div class="text-center m-t-40">
@@ -143,9 +133,10 @@
                                 </div>
                             </div>
 
+                            <!-- pie chart for this week -->
                             <div class="col-xl-5 col-lg-6 col-md-6 col-sm-12 col-12">
                                 <div class="card">
-                                    <h5 class="card-header">This Week's Popular Room Times</h5>
+                                    <h5 class="card-header">Popular Room Times in the Last 7 Days</h5>
                                     <div class="card-body">
                                         <div class="ct-chart-invoice1 ct-golden-section"></div>
                                         <div class="text-center m-t-40">
@@ -166,6 +157,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- lifetime data -->
 
                         <div class="row">
                             <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12 col-12">
@@ -191,18 +184,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- ============================================================== -->
-                            <!-- end product category  -->
-                                   <!-- product sales  -->
-                            <!-- ============================================================== -->
-                            
-                            <!-- ============================================================== -->
-                            <!-- sales  -->
-                            <!-- ============================================================== -->
-                            
-                            <!-- ============================================================== -->
-                            <!-- end total orders  -->
-                            <!-- ============================================================== -->
                     </div>
                 </div>
             </div>
@@ -242,7 +223,7 @@
     <!-- main js -->
     <!-- chart chartist js -->
     <script src="assets/vendor/charts/chartist-bundle/chartist.min.js"></script>
-    <script src="assets/libs/js/dashboard-ecommerce.js"></script>
+    <script src="assets/libs/js/data-ret-and-chart-creation.js"></script>
 </body>
  
 </html>
