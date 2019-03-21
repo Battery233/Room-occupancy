@@ -1,0 +1,1 @@
+# Gateway (Android app) for room occupancy
