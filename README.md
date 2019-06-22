@@ -5,7 +5,7 @@ A full-stack IoT system that can be used to monitor room occupancy. Full-stack r
 
 ### Structure of the system
 
-<img src= figures/structure.png  width="300">
+<img src= figures/structure.png  width="500">
 
 
 ### Position of the sensors
